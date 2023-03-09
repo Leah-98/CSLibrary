@@ -1,0 +1,1 @@
+adb shell am start -n com.dangbei.TVHomeLauncher/com.dangbei.leard.leradlauncher.ui.sony.main.MainActivity
