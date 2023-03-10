@@ -833,6 +833,18 @@ hashCode的通用约定如下：
 
 线程安全是对应多线程的，一般只用单线程，所以StringBuilder就够了
 
+
+
+**isEmpty()方法**
+
+String a = new String();
+
+String b = ""
+
+String c = null
+
+以上都会被判断为true
+
 # 集合
 
 集合长度是动态改变的
