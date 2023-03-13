@@ -120,18 +120,6 @@ git add .
 git add *
 ```
 
-保存对象和更新缓存区
-
-```
-
-```
-
-或者
-
-```
-git add *
-```
-
 删除不在缓存区的文件
 
 ```
@@ -216,6 +204,12 @@ git checkout -b sony/banko/s-develop-01 origin/sony/banko/s-develop-01
 
 ```
 git push origin --delete pullrequest_Valhalla2_dev
+```
+
+拉取远程仓库最新更新
+
+```
+git pull origin
 ```
 
 
