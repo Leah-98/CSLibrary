@@ -19,5 +19,15 @@ adb remount
 adb shell top -m 5 -d 1
 ```
 
+查看所有已安装的app包名
 
+```
+adb shell pm list packages
+```
+
+查看自己安装的app包名
+
+```
+adb shell pm list packages -3
+```
 
