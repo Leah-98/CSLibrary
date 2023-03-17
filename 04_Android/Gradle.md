@@ -4,9 +4,17 @@ gradle 入门指南 https://www.jianshu.com/p/4fbf352ffc56
 
 **属性**
 
-- minSdkVersion：最小API level
-- compileSdkVersion：编译的SDK版本
-- targetSdkVersion：目标版本
+- minSdkVersion：APP支持的最低系统版本
+- compileSdkVersion：编译的SDK版本。建议使用最新版本的api进行编译，避免废弃的api。不能影响运行时使用的sdk，这是由系统决定的。
+- targetSdkVersion：APP所使用这个所设定的版本及该版本前的所有特性。
+
+  - 例如：
+
+    需求：app要支持Android SDK 4，并且能够使用手势。
+
+    这个时候，就需要将minSdkVersion 设置为4，targetSdkVersion设置为7。因为手势实在Android SDK 7才引入的功能
+
+
 - dependencies：依赖配置，依赖的库
 
 **几个重要的配置文件**
