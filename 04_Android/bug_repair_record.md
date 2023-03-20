@@ -36,3 +36,9 @@ That should fix it.
 解决办法，更改生成apk的路径，如
 
 ![img](https://img-blog.csdnimg.cn/20200514095235468.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2x1b19ib2tl,size_16,color_FFFFFF,t_70)
+
+# 3.Entry name *.xml collided 解决
+
+https://blog.csdn.net/luo_boke/article/details/106113266
+
+总结：更改打包生成路径
