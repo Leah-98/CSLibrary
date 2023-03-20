@@ -42,3 +42,9 @@ That should fix it.
 https://blog.csdn.net/luo_boke/article/details/106113266
 
 总结：更改打包生成路径
+
+# 4. Current JDK version 1.8.0_341-b10 has a bug
+
+ (https://bugs.openjdk.java.net/browse/JDK-8007720) that prevents Room from being incremental. 
+
+https://stackoverflow.com/questions/58822538/current-jdk-version-1-8-has-a-bug-that-prevents-room-from-being-incremental

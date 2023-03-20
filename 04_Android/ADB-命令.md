@@ -31,3 +31,9 @@ adb shell pm list packages
 adb shell pm list packages -3
 ```
 
+导出logcat
+
+```
+adb logcat -time > <file-location>
+```
+
