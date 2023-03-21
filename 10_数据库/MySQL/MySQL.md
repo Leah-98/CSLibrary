@@ -1373,3 +1373,501 @@ union
 select t_id,tName,tGender from t_ua where tGender='male'
 ```
 
+# 三、DML语言
+
+数据操作语言
+
+##  1.插入语句
+
+语法：
+
+```sql
+insert into 表名(列名...) values(值1,...)
+#法一：支持插入多行，支持子查询
+insert into beauty(id,name,sex,borndate,phone,photo,boyfriend_id)
+values(13,'唐艺昕','女','1990-4-23','18988888888',null,2);
+#法二：不支持插入多行，不支持子查询
+insert into beauty(id,name,sex,phone)
+values(14,'金星','女','13988888888');
+```
+
+特点：
+
+- 插入的项目和列项目必须同类型或可兼容
+
+- 可以为NULL的列如何插入值：
+
+- 列的顺序可以调换
+
+- 列数和值的个数必须一致（就算插入的数据为null，也不可以省略）
+
+- 省略列名，默认所有列，而且列的顺序和表中列的顺序一致
+
+## 2.修改语句
+
+语法：
+
+```sql
+update 表名
+set 列 = 新值，列 = 新值，...
+where 筛选条件
+#sql92
+update 表1 别名，表2别名
+set 列 = 值，列 = 值
+where 连接条件
+and 筛选条件
+#sql99
+update 表1 别名
+inner | left | right join 表2 别名
+on 连接条件
+set 列 = 值，列 = 值
+where 筛选条件
+```
+
+## 3.删除语句
+
+### delete
+
+语法：
+
+```sql
+#1.单表的删除
+delete from 表名 where 筛选条件 
+#2.多表的删除
+#sql92
+delete 别名
+from 表1 别名，表2，别名
+where 连接条件
+and 筛选条件
+#sql99
+delete 表1的别名，表2的别名
+from 表1 别名
+inner | left | right join 表2 别名
+on连接条件
+where 筛选条件
+```
+
+用例：
+
+```sql
+#eg.删除张无忌的女朋友的信息
+delete b
+from beauty b
+inner join boys bo
+on b.boyfriend_id = bo.id
+where bo.boyName='张无忌';
+```
+
+### truncate 
+
+不允许加where，也叫做清空数据
+
+语法：
+
+```sql
+truncate table 表名
+```
+
+特点：
+
+- delete可以加where条件，truncate不能加
+
+- truncate删除效率高一点
+
+- 加入要删除的表中有自增长列，用delete删除后，再插入数据，自增长列的值从断点开始；而truncate删除后，再插入数据，自增长列的值从1开始
+
+- truncate删除没有返回值，delete删除有返回值
+
+- truncate删除不能回滚，而delete删除可以回滚
+
+# 四、DDL语言
+
+## 1.库的管理
+
+创建
+
+```sql
+create database 库名;
+```
+
+修改
+
+```sql
+rename database <库名> to <新库名>
+alter database <库名> character set gbk
+```
+
+删除
+
+```sql
+drop database <库名>
+#通用的写法：
+DROP DATABASE IF EXISTS <旧库名>;
+```
+
+## 2.表的管理
+
+创建
+
+```sql
+create table <> 表名(
+	列名 列的类型【(长度) 约束】,
+	列名 列的类型【(长度) 约束】,
+	列名 列的类型【(长度) 约束】,
+);
+```
+
+修改
+
+```sql
+#1.修改列名
+ALTER TABLE <表名> CHANGE COLUMN <原列名> <新列名> <新类型>;
+#2.修改列的类型或约束
+ALTER TABLE <表名> MODIFY COLUMN <列名> <新类型>;
+#3.添加新列
+ALTER TABLE <表名> ADD COLUMN <新列名> <类型>;
+#4.删除列
+ALTER TABLE <表名> DROP COLUMN <列名>
+#5.修改表名
+ALTER TABLE <表名> RENAME TO <新表名>;
+```
+
+删除
+
+```sql
+DROP TABLE <表名>;
+```
+
+表的复制
+
+```sql
+#1.仅仅复制表的结构
+CREATE TABLE <新表> LIKE <旧表>;
+#2.复制表的结构+数据
+CREATE TABLE <新表>
+SELECT * FROM <旧表>;
+#3.只复制部分数据
+CREATE TABLE <新表>
+SELECT <列名1>,<列名2>,...
+FROM <旧表>
+WHERE <筛选条件>;
+#4.仅仅复制某些字段
+CREATE TABLE <新表>
+SELECT <列名1>,<列名2>,...
+FROM <旧表>
+WHERE 0;
+```
+
+## 3.数据类型
+
+### 3.1数值型
+
+#### 3.1.1整型
+
+| 整数类型     | 字节 | 范围                                                         |
+| ------------ | ---- | ------------------------------------------------------------ |
+| TinyInt      | 1    | 有符号：-128~127<br/>无符号：0~255                           |
+| SmallInt     | 2    | 有符号：-32768~32767<br/>无符号：0~65535                     |
+| MediumInt    | 3    | 有符号：-8388608~8388607<br/>无符号：0~1677215               |
+| Int、Integer | 4    | 有符号：-2147483648~2147483647<br/>无符号：0~4294967295      |
+| BigInt       | 8    | 有符号：-9223372036854775808~9223372036854775807<br/>无符号：0~9223372036854775807*2+1 |
+
+特点：
+
+- 如果不设置无符号还是有符号，默认是有符号，如果想设置无符号，添加unsigned关键字
+- 如果插入的数值超出了范围，会报错
+- 如果不设置长度，会有默认的长度
+- 长度代表了显示的最大宽度，如果不够会用0在左边填充
+
+#### 3.1.2小数
+
+浮点数
+
+| 浮点数类型 | 字节 | 范围 |
+| ---------- | ---- | ---- |
+| float      | 4    |      |
+| double     | 8    |      |
+
+定点数
+
+| 定点数类型                | 字节 | 范围                                                         |
+| ------------------------- | ---- | ------------------------------------------------------------ |
+| DEC(M,D)<br/>DECIMAL(M,D) | M+2  | 最大取值范围与double相同，给定decimal的有效取值范围由M和D决定 |
+
+特点：
+
+- M：整数部位+小数部位；D：小数部位；如果超过范围，则插入临界值
+
+- M和D都可以省略，如果是decimal，则M默认为10，D默认为0；如果是float和double，则会根据插入的数值的精度来决定精度
+
+- 定点型的精确度较高，如果要求插入数值的精度较高如货币运算等则考虑使用
+
+原则：
+
+- 所选择的类型越简单越好，保存的数值的类型越小越好
+
+### 3.2字符型
+
+#### 较短的文本：char、varchar
+
+| 字符串类型 | 最多字符数 | 描述及存储需求       |
+| ---------- | ---------- | -------------------- |
+| char(M)    | M          | M为0-255之间的整数   |
+| varchar(M) | M          | M为0-65535之间的证书 |
+
+特点：char固定长度，varchar可变长度；char比较耗空间，varchar比较节省，char效率高，varchar效率低。
+
+应用场景：性别 char(1)，
+
+#### 较长的文本：text、blob（较长的二进制数据）
+
+其他：
+
+#### enum 
+
+不区分大小写
+
+又称为枚举类型，要求插入的值必须属于列表中指定的值之一
+
+如果列表成员为1-255，则需要1个字节存储
+
+如果列表成员为255-65535，则需要2个字节存储
+
+最多需要65535个成员
+
+#### set
+
+不区分大小写
+
+和enum类型类似，里面可以保存0-64个成员。和enum类型最大的区别是：set类型一次可以选取多个成员，而enum只能选一个，根据成员个数不同，存储所占的字节也不同。
+
+binary和varbinary用于保存较短的二进制
+
+### 3.3日期型
+
+![image-20230321170232595](E:\personal\CSLibrary\10_数据库\MySQL\imgs\image-20230321170232595.png)
+
+![image-20230321170243481](E:\personal\CSLibrary\10_数据库\MySQL\imgs\image-20230321170243481.png)
+
+## 4.常见约束
+
+含义：一种限制，用于限制表中的数据，为了保证表的数据的准确和可靠性
+
+分类：六大约束
+
+**NOT NULL**：非空，用于保证该字段的值不能为空，比如姓名、学号等
+
+**DEFAULT**：默认，用于保证该字段有默认值，比如性别
+
+**PRIMARY KEY**：主键，用于保证该字段的值具有唯一性，并且非空，一个表只能有一个，允许但不推荐，比如学号、员工编号等
+
+**UNIQUE**：唯一，用于保证该字段的值具有唯一性，可以为空，一个表可以有多个，允许但不推荐比如座位号
+
+**CHECK**：检查约束【mysql中不支持】，比如年龄、性别
+
+**FOREIGN KEY**：外键，用于限制两个表的关系，用于保证该字段的值必须来自于主表的关联列的值。在从表添加外键约束，用于引用主表中某列的值。比如学生表的专业编号，员工表的部门编号，员工表的工种编号。
+
+特点：1.要求在从表设置外键关系；2.从表的外键列的类型和主表的关联列的类型一致或兼容；
+
+添加约束的时机；3.主表的关联列必须是一个key（一般是主键或唯一）；4.插入数据是，先插入主表，再插入从表；删除数据是，先删除从表，再删除主表
+
+### 4.1.创建表时
+
+必须在数据添加之前添加约束
+
+约束的添加分类：
+
+**列级约束**：六大约束语法上都支持，但外键约束没有效果
+
+```sql
+create table stuinfo (
+    id int primary key,
+    stuName varchar(20) not null,
+    gener char(1) check(gender='男' or gender='女'),
+    seat int unique,
+    age int default 18,
+    majorId int foreign key references major(id)
+);
+```
+
+**表级约束**：除了非空、默认、其他都支持
+
+语法 【constraint 约束名】 约束类型（字段名）
+
+```sql
+create table stuinfo (
+    id int ,
+    stuName varchar(20) ,
+    gener char(1) ,
+    seat int ,
+    age int ,
+    majorId int ,
+    constraint pk primary key(id),
+    constraint uq unique(seat),
+    constraint ck check(gender = '男' or gender = '女'),
+    constraint fk_stuinfo_major foreign key(majorid) references major(id)
+);
+```
+
+**通用的写法**
+
+```sql
+create table if exists stuinfo(
+    if int primary key,
+    stuname varchar(20) not null,
+    sex char(1),
+    age int default 18,
+    seat int unique,
+    majorid int,
+    constraint fk_stuinfo_major foreign key(majorid) references major(id)
+)
+```
+
+### 4.2修改表时
+
+```SQL
+#1.添加非空约束
+alter table stuinfo modify column stuname varchar(20) not null;
+#2.添加默认约束
+alter table stuinfo modify column age int deafult 18
+#3.添加主键
+alter table stuinfo modify column id int primary key;
+alter table stuinfo add primary key(id);
+#4.添加唯一
+alter table stuinfo modift column seat int unique;
+alter table stuinfo add unique(seat);
+#5.添加外键
+alter table stuinfo add constraint foreign key(majorid) references major(id);
+```
+
+### 4.3修改表时删除约束
+
+```SQL
+#1.删除非空约束
+alter table stuinfo modify column stuname varchar(20) null;
+#2.删除默认约束
+alter table stuinfo modify column age int;
+#3.删除主键
+alter table stuinfo drop index <主键名>;
+show index from <表名>;
+#4.删除唯一
+alter table stuinfo drop index <唯一键名>;
+#5.删除外键
+alter table stuinfo drop foreign key<外键名>;
+```
+
+**标识列**
+
+又称为自增长列
+
+含义：可以不用手动的插入值，系统提供默认的序列值
+
+特点：1.标识列必须和主键搭配吗？不一定，但要求是一个key；2.一个表可以有几个标识列？至多一个！；3.标识列的类型只能是数值型；4.标识列可以通过set auto_increment_increment=3设置
+
+```SQL
+#1.创建表时设置标识列
+create table tab_identity (
+    id int primary key auto_increment,
+    name varchar(20)
+);
+insert into tab_identity values(1,'john');
+#2.修改表时设置标识列
+alter table tab_identity modify column id int primary key auto_incremnet;
+#3.修改表时删除标识列
+alter table tab_identity modift column id int;
+```
+
+#  五、TCL语言
+
+transaction control language 事务控制语言
+
+事务：一个或一组sql语句组成一个执行单元，这个执行单元要么全部执行，要么全部不执行。
+
+案例：转账
+
+存储引擎：
+
+1. 在mysql中的数据用各种不同的计数存储在文件（或内存）中
+
+2. 通过show engines来查看mysql支持的存储引擎
+
+3. 在mysql中用的最多的存储引擎有：innodb，myisam，memory等。其中innodb支持事务，而myisam，memory等不支持事务。
+
+事务的ACID属性
+
+1. 原子性：Atomicity：原子性是指事务是一个不可分割的工作单位，事务中的操作要么都发生，要么都不发生
+
+2. 一致性：Consistency：事务必须使数据库从一个一致性状态到另一个一致性的状态。
+
+3. 隔离性：Isolation：事务的隔离性是指一个事务的执行不能被其他事务干扰，即一个事务内部的操作及使用的数据对并发的其他事务是隔离的，并发执行的各个事务之间不能互相干扰。
+
+4. 持久性：Durability：持久性是指一个事务一旦被提交，它对数据库中的数据的改变就是永久性的，接下来的其他操作和数据库故障都不应该对其有任何影响。
+
+事务的创建：
+
+- 隐式事务：事务没有明显的开启和结束的标记。
+  - 比如：insert、update、delete
+
+- 显示事务：事务具有明显的开启和结束的标记。
+
+  - 前提：比如先把自动提交功能关闭
+
+  - set autocomit=0;
+
+开启事务的语句：
+
+```SQL
+#步骤1：开启事务
+set autocommit=0;
+start transaction;可选的
+#步骤2：编写事务中的sql语句(select insert update delete)
+语句1；
+语句2；
+……
+#步骤3：结束事务
+commit；提交事务
+rollback；回滚事务
+savepoint;保存点，只搭配rollback使用
+```
+
+当多个事务同时访问数据库中相同的数据时，如果没有采取必要的隔离机制，就会导致各种并发的问题
+
+- **脏读**：对于两个事务T1，T2，T1读取了已经被T2更新但还没有被提交的字段之后，若T2回滚，T1读取的内容就是临时且无效的。
+
+- **不可重复读**：对于两个事务T1，T2，T1读取了一个字段，然后T2更新了该字段之后，T1再次读取他一字段，值就不同了。
+
+- **幻读**：对于两个事务T1，T2，T1从一个表中读取了一个字段，然后T2在该表中插入了一些新行。之后，如果T1再次读取同一个表，就会多出几行。
+
+数据库提供的4种事务隔离级别
+
+![image-20230321173431178](E:\personal\CSLibrary\10_数据库\MySQL\imgs\image-20230321173431178.png)
+
+Oracle支持的2种事务隔离级别：read commited，serializable。Oracle默认的事务隔离级别为：read commited。
+
+mysql支持4种事务隔离级别。Mysql默认的事务隔离级别为：repeatable read。
+
+#  六、视图
+
+含义：虚拟表，和普通表一样使用
+
+特点：动态生成，只保存了sql逻辑，不保存查询结果
+
+语法：
+
+```sql
+#1.创建
+CREATE VIEW <视图名>
+AS
+SELECT……
+#2.使用（当正常的表一样使用）
+SELECT <视图名>.<列名> FROM <视图名>
+#3.修改
+ALTER VIEW <视图名>
+AS
+SELECT……
+#4.删除
+DROP VIEW <视图名>,<视图名>,……
+#5.查看
+DESC <视图名>; 
+```
+
