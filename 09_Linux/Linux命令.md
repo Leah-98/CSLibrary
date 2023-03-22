@@ -14,3 +14,17 @@ adb remount
 
 
 
+# 网络配置
+
+查看网卡
+
+```shell
+ifconfig -a
+```
+
+![image-20230322161152241](E:\personal\CSLibrary\09_Linux\imgs\image-20230322161152241.png)
+
+eth0用于访问外部网络，默认情况下关闭
+
+lo网卡用实现本机内部访问，IP地址为127.0.0.1（本机回送地址）
+
