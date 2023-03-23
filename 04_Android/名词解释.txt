@@ -1,0 +1,3 @@
+ATV：AndroidTV
+AOSP：Android Open Source Project
+NDK: Android's Native Development Kit
