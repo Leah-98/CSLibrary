@@ -1,4 +1,4 @@
-# Monkey测试
+# 简介
 
 - Android SDK 中附带的一个工具
 - 原理：利用socket通讯（Android客户端和服务端以TCP/UDP方法）来模拟用户的按键输入、触摸屏输入、手势输入等，并把它们发送给系统。同时，Monkey还对测试中的系统进行监测，对下列三种情况进行特殊处理（自动停止）。
@@ -9,11 +9,11 @@
   - Monkey程序由Android系统自带，使用Java语言写成，在Android文件系统中的存放路径是：/system/framework/monkey.jar；
   - Monkey.jar程序是由一个名为“monkey”的Shell脚本来启动执行，shell脚本在Android文件系统中的存放路径是：/system/bin/monkey；
 
-## 参数
+# 参数
 
-![22](E:/personal/CSLibrary/04_Android/imgs/22.jpg)
+![22](G:\notes\se\android\imgs\22.jpg)
 
-### 帮助
+## 帮助
 
 **-help**
 
@@ -21,7 +21,7 @@
 adb shell monkey -help
 ```
 
-### 基础参数
+## 基础参数
 
 **-v**
 
@@ -91,7 +91,7 @@ adb shell monkey -p com.htc.Weather -p com.htc.pdfreader 100 
 
 如果不指定任何的目录，Monkey会选中在目录Intent.CATEGORY_LANUCHER或者Intent.CATEGORY_MONKEY列出的Activity
 
-### 发送的事件类型
+## 发送的事件类型
 
 | 选项            | 含义                                                         |
 | --------------- | ------------------------------------------------------------ |
@@ -115,7 +115,7 @@ adb shell monkey -p com.sf.DarkCalculator --pct-touch 50 --pct-motion 50 1000
 
 触摸事件50%，滑动事件50%，事件总数1000
 
-### 调试选项
+## 调试选项
 
 | 选项                         | 含义                                                         |
 | ---------------------------- | ------------------------------------------------------------ |
@@ -129,7 +129,7 @@ adb shell monkey -p com.sf.DarkCalculator --pct-touch 50 --pct-motion 50 1000
 | --dbg-no-events              | 初始化启动的activity，但是不产生任何事件                     |
 | --wait-dbg                   | 直到连接了调试器才执行monkey测试                             |
 
-### 其他
+## 其他
 
 为测试分配一个专用的端口号，不过这个命令只能输出跳转的信息及有错误时输出信息；
 
@@ -143,8 +143,13 @@ adb shell monkey -p com.package --port 端口号 -v
 adb shell monkey -p http://com.tencent.XXX(替换包名) --throttle 500 --ignore-crashes--ignore-timeouts --ignore-security-exceptions --ignore-native-crashes -v -v -v 1000000 > d:\monkeyScreenLog.log
 ```
 
-## 日志定位问题
+# 日志定位问题
 
 搜索关键字：Fatal、Crash、ANR、Exception
 
+
+
+
+
 -c： activity必须至少包含一个指定的category，才能被启动，否则启动不了 
+
