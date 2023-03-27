@@ -16,6 +16,7 @@
   - Jira
   - Uml
   - Git
+  - CICD
 - 06_FrontEnd
 - 07_Python
 - 08_C++
