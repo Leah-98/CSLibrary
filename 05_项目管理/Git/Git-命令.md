@@ -30,6 +30,8 @@ git config —global user.name “name”
 git config —global user.email “email address”
 ```
 
+
+
 配置当前仓库用户名和邮箱
 
 ```
@@ -37,16 +39,36 @@ git config user.name “name”
 git config user.email “email address”
 ```
 
+
+
 找到.gitconfig文件
 
 ```
 git config --list --show-origin
 ```
 
+
+
+查看远程仓库
+
+```shell
+git remote -v
+```
+
+
+
 关联远程仓库
 
 ```bash
 git remote add origin git@github.com:sony-netapp/SearchApp4China.git
+```
+
+
+
+删除远程仓库
+
+```shell
+git remote rm <repo-name>
 ```
 
 
