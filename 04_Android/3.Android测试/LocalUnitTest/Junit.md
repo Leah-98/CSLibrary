@@ -1,7 +1,10 @@
 # 介绍
 
-**Junit**：Java的面向程序员的测试框架
 **xUnit**：一套基于测试驱动开发的测试框架，包括了 PythonUint、CppUnit、Junit，分别是 Python、C++、Java的测试框架
+
+**Junit**：Java的面向程序员的测试框架，基于xUnit实现
+
+**wiki**：https://junit.org/junit4
 
 # 使用
 
@@ -10,7 +13,17 @@
 app/build 下导包
 
 ```
-testImplementation 'junit:junit:4.13.2'
+dependencies {
+	// JUnit 4 framework
+	testImplementation 'junit:junit:4.13.2'
+	// AndroidJUnitRunner
+	testImplementation 'androidx.test:runner:1.2.0'
+	// some rules for example ActivityTestRule
+	testImplementation 'androidx.test:rules:1.2.0'
+	// ext class for junit
+	testImplementation 'androidx.test.ext:junit:1.1.1'
+	testImplementation 'androidx.test.ext:truth:1.2.0'
+}
 ```
 
  //前面是 testImplementation
@@ -521,7 +534,7 @@ public void multiply() {
 ### @RunWith
 
 - 可以更改运行测试器
-- JUnit将调用其引用的类，以在该类中运行测试，而不是JUnit内置的运行器。
+- 如果一个类使用了@RunWith，或者一个类的父类使用了@RunWith，JUnit将调用其引用的类，以在该类中运行测试，而不是使用JUnit内置的运行器。
   - JUnit 4中的套件是使用RunWith和一个名为Suite的自定义运行程序构建的
 - 一般在测试套件的时候使用
 
