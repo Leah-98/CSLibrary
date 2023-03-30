@@ -9,7 +9,8 @@
 - 03_Java
 - 04_Android
   - 1.EBook
-  - 2.Kotlin
+  - 2-1.Kotlin
+  - 2-2.Rust
   - 3.Android测试
     - LocalUnitTest
     - InstrumentedUnitTest
