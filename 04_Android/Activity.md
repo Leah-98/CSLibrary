@@ -67,8 +67,8 @@ method2 代码设置![0.7581949137520234.png](Android_files/0.7581949137520234.p
 
 # 生命周期
 
-![0.5621750421825074.png](Android_files/0.5621750421825074.png)
-![0.4475089323059067.png](Android_files/0.4475089323059067.png)
+![0.5621750421825074.png](imgs/0.5621750421825074.png)
+![0.4475089323059067.png](imgs/0.4475089323059067.png)
 
 例子:
 
@@ -80,7 +80,20 @@ method2 代码设置![0.7581949137520234.png](Android_files/0.7581949137520234.p
 - 如果有个Activity伪装成对话框模式,那么它启动时,之前的Activity:onPause,"对话框"消失后,onResume再次回到前台
 
 注意事项:
+
 不要在MainActivity的onPause()中做耗时操作,可以把处理放到onStop,否则会影响SecondActivity的启动速度
+
+## onAttachedToWindow()/onDetachedFromWindow()
+
+适用于View附加到Window后/View从Window分离后
+
+此时View还未经过测量和绘制
+
+调用顺序 onResume -> onAttachedToWindow(还未经过测量和绘制) -> onWindowsFocuesChanged(hasFocus:true时已经经过测量和绘制) -> onDetachedFromWindow() -> onPause
+
+一般使用场景是初始化/释放重量级资源
+
+参考：https://www.cnblogs.com/liushilin/p/11099856.html
 
 # 四种状态
 
