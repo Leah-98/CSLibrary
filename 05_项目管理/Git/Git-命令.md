@@ -23,6 +23,14 @@ refs/
 
 ## 配置
 
+查看版本
+
+```
+git --version
+```
+
+
+
 配置全局用户名和邮箱
 
 ```
@@ -74,6 +82,8 @@ git remote rm <repo-name>
 
 
 # WorkZone
+
+## 快照
 
 放弃工作区中全部的修改
 ````
@@ -128,19 +138,57 @@ git reflog
 git reset --hard <snapshot-hashcode>
 ```
 
-添加某个文件到git
+## 缓存区
+
+### add
+
+会提交当前工作区中当前目录(包括子目录)下所有的文件改动。
+
+注意：在Git Version 1.x中：会将当前工作区中当前目录(包括子目录)下的所有新文件和对已有文件的改动提交至暂存区，但不包括被删除的文件。
+
+```
+git add .
+```
+
+
+
+只会监控当前整个工作区中之前已被 `add` 的文件，即已被跟踪(tracked)的文件，也就是只会将当前整个工作区中被修改和被删除的文件提交至暂存区。而新文件因为未被跟踪(untracked)，所以不会被提交至暂存区。
+
+```
+git add -u
+git add --update
+```
+
+
+
+它会将当前整个工作区中所有的文件改动提交至暂存区，包括新增、修改和被删除的文件，不受当前所在目录限制
+
+注意： `git add -A` 不属于 `git add .` 和 `git add -u` 。因为 `git add .` 只会提交当前目录(包括子目录)下的新文件和对已有文件的改动，而 `git add -A` 不受当前目录限制。也就是说，`git add .` 和 `git add -u` 功能的合集只能属于 `git add -A` 功能的子集。
+
+```
+git add -A
+git add --all
+```
+
+
+
+添加单个文件
 
 ```
 git add <file-name>
 ```
 
-添加所有文件到git
+
+
+表示添加当前目录(包括子目录)下的所有文件改动，但不包括文件名以 `.` 符号开头的文件的改动
 
 ```
-git add --all
-git add .
 git add *
 ```
+
+
+
+### clean
 
 删除不在缓存区的文件
 
@@ -151,11 +199,23 @@ git clean -xfd #连 gitignore 的untrack 文件/目录也一起删掉 (慎用,�
 git clean -nxfd # 在用上述 git clean 前,墙裂建议加上 -n 参数来先看看会删掉哪些文件,防止重要文件被误删
 ```
 
+
+
+## 提交
+
 将本地git记录添加到远程
 
 ```
 git commit -m "modify DownloadUri from PRD to DEV"
 git commit 后在vim编辑提交说明，shift+zz保存退出
+```
+
+
+
+如果当前分支与多个主机存在追踪关系，则可以使用 -u 参数指定一个默认主机，这样后面就可以不加任何参数使用git push
+
+```
+git push -u <remote-name> <branch-name>
 ```
 
 
@@ -170,11 +230,15 @@ git commit 后在vim编辑提交说明，shift+zz保存退出
 git branch
 ```
 
+
+
 在本地创建新分支
 
 ```
 git branch <local-branch-name> 
 ```
+
+
 
 creates a new branch from the current HEAD, and switches the working directory to the new branch
 
@@ -182,11 +246,15 @@ creates a new branch from the current HEAD, and switches the working directory t
 git checkout -b <local-branch-name>
 ```
 
+
+
 拉取远程分支并merge到本地
 
 ```
 git pull origin <local-branch-name>:<remote-branch-name>
 ```
+
+
 
 删除本地分支
 
@@ -194,11 +262,23 @@ git pull origin <local-branch-name>:<remote-branch-name>
 git branch -d <local-branch-name> 
 ```
 
+
+
 查看所有分支
 
 ```
 git branch -a
 ```
+
+
+
+修改分支名字
+
+```
+git branch -m <old-name> <new-name>
+```
+
+
 
 ## 远程
 
