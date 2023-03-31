@@ -16,6 +16,7 @@
     - InstrumentedUnitTest
   - 4.Android反编译
   - 5.AndroidTV
+  - 6.AndroidStudio
 - 05_项目管理
   - Jira
   - Uml
