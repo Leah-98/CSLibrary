@@ -48,3 +48,11 @@ https://blog.csdn.net/luo_boke/article/details/106113266
  (https://bugs.openjdk.java.net/browse/JDK-8007720) that prevents Room from being incremental. 
 
 https://stackoverflow.com/questions/58822538/current-jdk-version-1-8-has-a-bug-that-prevents-room-from-being-incremental
+
+# 5.The specified Gradle installation directory does not exist error...
+
+https://stackoverflow.com/questions/71452170/the-specified-gradle-installation-directory-does-not-exist-error-after-android-s
+
+![image-20230403145156197](E:\personal\CSLibrary\04_Android\imgs\image-20230403145156197.png)
+
+选择'gradle-wrapper.properties' file
