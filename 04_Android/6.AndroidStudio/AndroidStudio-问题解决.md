@@ -56,3 +56,8 @@ https://stackoverflow.com/questions/71452170/the-specified-gradle-installation-d
 ![image-20230403145156197](E:\personal\CSLibrary\04_Android\imgs\image-20230403145156197.png)
 
 选择'gradle-wrapper.properties' file
+
+# 6.output中文乱码问题
+
+https://blog.csdn.net/jankingmeaning/article/details/104772104
+
