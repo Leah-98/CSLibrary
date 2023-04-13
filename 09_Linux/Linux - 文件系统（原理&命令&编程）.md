@@ -585,4 +585,12 @@ find搜索整个目录，locate搜索数据库 /var/lib/locatedb
 
 ![image-20230323175911567](E:\personal\CSLibrary\09_Linux\imgs\image-20230323175911567.png)
 
-# 
+
+
+# 编程
+
+![Linux - 编程 - 文件](imgs\Linux - 编程 - 文件.PNG)
+
+![Linux - 编程 - 文件2](imgs\Linux - 编程 - 文件2.PNG)
+
+![Linux - 编程 - 文件3](imgs\Linux - 编程 - 文件3.PNG)
