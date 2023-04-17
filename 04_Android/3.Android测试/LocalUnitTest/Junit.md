@@ -28,6 +28,10 @@ dependencies {
 
  //前面是 testImplementation
 
+使用Junit5：https://blog.csdn.net/yihanss/article/details/125809714
+
+
+
 ## 2.基本使用，断言方法
 
 - 先准备好 原类（被测试类）
@@ -683,3 +687,8 @@ public class Log {
 }
 ```
 
+# 问题解决
+
+## 关于Android Studio单元测试中“Method d in android.util.Log not mocked.”问题的解决。
+
+https://blog.csdn.net/qq_38910403/article/details/102639487
