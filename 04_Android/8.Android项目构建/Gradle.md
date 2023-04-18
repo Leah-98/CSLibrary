@@ -589,3 +589,15 @@ Android 应用模块的构建流程通常按照以下步骤执行：
 1. 在生成最终 APK 之前，**打包器会使用 zipalign 工具对应用进行优化**，以减少其在设备上运行时所占用的内存。
 
 构建流程结束时，将获得应用的调试版 APK 或发布版 APK，以用于部署、测试或发布给外部用户。
+
+
+
+# Android Gradle Plugin 与 Gradle
+
+**Gradle** --> 构建项目的工具，能够简化编译、打包、测试过程。可以把Gradle类比成Maven --> 在gradle-wrapper.properties中修改
+
+**Android Gradle** --> 一堆适合Android开发的Gradle插件的集合，主要由Google的Android团队开发，Gradle不是Android的专属构建系统；一边调用 Gradle本身的代码和批处理工具来构建项目，一边调用Android SDK的编译、打包功能，从而让我们能够顺畅地在AS上进行开发 --> 在proj的build.gradle中修改
+
+详解：https://juejin.cn/post/6915214037697445896
+
+详解2：https://zhuanlan.zhihu.com/p/32714369

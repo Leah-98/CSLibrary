@@ -106,3 +106,14 @@ File > Project Structure
 https://www.jianshu.com/p/f7eca878b8d7
 
 # **Rebuild Project命令包含Clean Project命令**
+
+# 查看apk签名
+
+进入SDK/build_tools/<sdk_version>/目录下使用apksigner
+
+```shell
+apksigner verify -v <apk-file>
+```
+
+![image-20230327161548042](E:\personal\CSLibrary\04_Android\imgs\image-20230327161548042.png)
+

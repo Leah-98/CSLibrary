@@ -78,6 +78,10 @@ the mainSrc,javDebugTree,kotlinDebugTree is same as on the fly mode config
 
 ### On-the-fly instrumentation: 
 
+用一个新的class loader，然后在执行class文件的过程中加入类似的输出代码。
+
+在应用启动时加入jacoco agent进行插桩，在开发、测试人员使用应用期间实时地进行代码覆盖率分析。相信很多的java项目开发人员并不会去写单元测试代码的，因此覆盖率统计就要把手工测试或接口测试覆盖的情况作为重要依据，显然在线模式更符合实际需求。
+
 One of the main benefits of JaCoCo is the Java agent, which instruments classes on-the-fly. This simplifies code coverage analysis a lot as no pre-instrumentation and classpath tweaking is required. However, there can be situations where on-the-fly instrumentation is not suitable, for example:
 
 - Runtime environments that do not support Java agents.
@@ -93,6 +97,8 @@ So there is a big issue when test some powermock test. PowerMock instruments cla
 refer uri:https://github.com/powermock/powermock/wiki/Code-coverage-with-JaCoCo
 
 ### Offline Instrumentation:
+
+先对class文件加入代码再运行
 
 in this mode, you must pre-instruments classes in build process.
 
