@@ -6,7 +6,7 @@ Service(服务)是一个一种可以在后台执行长时间运行操作而没�
 
 ## 启动状态
 
-当应用组件（如 Activity）通过调用 startService() 启动服务时，服务即处于“启动”状态。一旦启动，服务即可在后台无限期运行，即使启动服务的组件已被销毁也不受影响，除非手动调用才能停止服务， 已启动的服务通常是执行单一操作，而且不会将结果返回给调用方。
+当应用组件（如 Activity）通过调用 startService() 启动服务时，服务即处于“启动”状态。一旦启动，服务即可在后台无限期运行，即使启动服务的组件已被销毁也不受影响，除非<u>手动调用才能停止服务</u>， 已启动的服务通常是执行单一操作，而且不会将结果返回给调用方。
 
 ## 绑定状态
 
@@ -33,7 +33,8 @@ Service(服务)是一个一种可以在后台执行长时间运行操作而没�
 - android:name：对应Service类名
 - android:permission：是权限声明
 - android:process：是否需要在单独的进程中运行,当设置
-- android:process=”:remote”时，代表Service在单独的进程中运行。注意“：”很重要，它的意思是指要在当前进程名称前面附加上当前的包名，所以“remote”和”:remote”不是同一个意思，前者的进程名称为：remote，而后者的进程名称为：App-packageName:remote。
+  - android:process=”:remote”时，代表Service在单独的进程中运行。注意“：”很重要，它的意思是指要在当前进程名称前面附加上当前的包名，所以“remote”和”:remote”不是同一个意思，前者的进程名称为：remote，而后者的进程名称为：App-packageName:remote。
+
 - android:isolatedProcess ：设置 true 意味着，服务会在一个特殊的进程下运行，这个进程与系统其他进程分开且没有自己的权限。与其通信的唯一途径是通过服务的API(bind and start)。
 - android:enabled：是否可以被系统实例化，默认为 true因为父标签 也有 enable 属性，所以必须两个都为默认值 true 的情况下服务才会被激活，否则不会激活。
 
@@ -114,9 +115,7 @@ public class SimpleService extends Service {
 
 当服务不再使用且将被销毁时，系统将调用此方法。服务应该实现此方法来清理所有资源，如线程、注册的侦听器、接收器等，这是服务接收的最后一个调用。
 
-
-
-![image-20220310093313926](E:/Libraries/notes/se/android/Android_files/image-20220310093313926.png)
+![image-20220310093313926](imgs/image-20220310093313926.png)
 
 
 
@@ -164,64 +163,78 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 从代码看出，启动服务使用startService(Intent intent)方法，仅需要传递一个Intent对象即可，在Intent对象中指定需要启动的服务。而使用startService()方法启动的服务，在服务的外部，必须使用stopService()方法停止，在服务的内部可以调用stopSelf()方法停止当前服务。如果使用startService()或者stopSelf()方法请求停止服务，系统会就会尽快销毁这个服务。值得注意的是对于启动服务，一旦启动将与访问它的组件无任何关联，即使访问它的组件被销毁了，这个服务也一直运行下去，直到手动调用停止服务才被销毁，至于onBind方法，只有在绑定服务时才会起作用，在启动状态下，无需关注此方法，ok~，我们运行程序并多次调用startService方法，最后调用stopService方法。Log截图如下：
 
-![img](E:\Libraries\notes\se\android\Android_files\20160930094006623)
+![img](imgs\20160930094006623)
 
-从Log可以看出，第一次调用startService方法时，onCreate方法、onStartCommand方法将依次被调用，而多次调用startService时，只有onStartCommand方法被调用，最后我们调用stopService方法停止服务时onDestory方法被回调，这就是启动状态下Service的执行周期。接着我们重新回过头来进一步分析onStartCommand（Intent intent, int flags, int startId），这个方法有3个传入参数，它们的含义如下：
+从Log可以看出，第一次调用startService方法时，onCreate方法、onStartCommand方法将依次被调用，而多次调用startService时，只有onStartCommand方法被调用，最后我们调用stopService方法停止服务时onDestory方法被回调。
 
-若是显示开启了Service，则无法用解绑方法关闭Service。
-若是绑定开启了Service，则无法用显示关闭Service方法。
+注意：
+
+- 若是显示开启了Service，则无法用解绑方法关闭Service。
+
+- 若是绑定开启了Service，则无法用显示关闭Service方法。
 
 ### onStartCommand（Intent intent, int flags, int startId）
 
 **intent** ：启动时，启动组件传递过来的Intent，如Activity可利用Intent封装所需要的参数并传递给Service
 
-**flags**：表示启动请求时是否有额外数据，可选值有 0，START_FLAG_REDELIVERY，START_FLAG_RETRY，0代表没有，它们具体含义如下：
+**flags**：表示启动请求时是否有额外数据，可选值有 0，START_FLAG_REDELIVERY，START_FLAG_RETRY，0代表没有：
 
-- START_FLAG_REDELIVERY：这个值代表了onStartCommand方法的返回值为
-  START_REDELIVER_INTENT，而且在上一次服务被杀死前会去调用stopSelf方法停止服务。其中START_REDELIVER_INTENT意味着当Service因内存不足而被系统kill后，则会重建服务，并通过传递给服务的最后一个 Intent 调用 onStartCommand()，此时Intent时有值的。
-- START_FLAG_RETRY：该flag代表当onStartCommand调用后一直没有返回值时，会尝试重新去调用onStartCommand()。
+- **START_FLAG_REDELIVERY**：这个值代表了onStartCommand方法的返回值为
+  START_REDELIVER_INTENT，而且在上一次服务被杀死前会去调用stopSelf方法停止服务。其中START_REDELIVER_INTENT意味着<u>当Service因内存不足而被系统kill后，则会重建服务，并通过传递给服务的最后一个 Intent 调用 onStartCommand()</u>，此时Intent时有值的。
+- **START_FLAG_RETRY**：该flag代表<u>当onStartCommand调用后一直没有返回值时，会尝试重新去调用onStartCommand()</u>。
 
 **startId** ： 指明当前服务的唯一ID，与stopSelfResult (int startId)配合使用，stopSelfResult 可以更安全地根据ID停止服务。
 
 **onStartCommand的返回值int类型**，有三种可选值， START_STICKY，START_NOT_STICKY，START_REDELIVER_INTENT，它们具体含义如下：
 
-- START_STICKY：当Service因内存不足而被系统kill后，一段时间后内存再次空闲时，系统将会尝试重新创建此Service，一旦创建成功后将回调onStartCommand方法，但其中的Intent将是null，除非有挂起的Intent，如pendingintent，这个状态下比较适用于不执行命令、但无限期运行并等待作业的媒体播放器或类似服务。
-- START_NOT_STICKY：当Service因内存不足而被系统kill后，即使系统内存再次空闲时，系统也不会尝试重新创建此Service。除非程序中再次调用startService启动此Service，这是最安全的选项，可以避免在不必要时以及应用能够轻松重启所有未完成的作业时运行服务。
-- START_REDELIVER_INTENT：当Service因内存不足而被系统kill后，则会重建服务，并通过传递给服务的最后一个 Intent 调用 onStartCommand()，任何挂起 Intent均依次传递。与START_STICKY不同的是，其中的传递的Intent将是非空，是最后一次调用startService中的intent。这个值适用于主动执行应该立即恢复的作业（例如下载文件）的服务。
+- **START_STICKY**：<u>当Service因内存不足而被系统kill后，一段时间后内存再次空闲时，系统将会尝试重新创建此Service，一旦创建成功后将回调onStartCommand方法，但其中的Intent将是null，除非有挂起的Intent，如pendingintent</u>，这个状态下比较适用于<u>不执行命令、但无限期运行</u>并等待作业的媒体播放器或类似服务。
+- **START_NOT_STICKY**：当Service因内存不足而被系统kill后，即使系统内存再次空闲时，系统也不会尝试重新创建此Service。除非程序中再次调用startService启动此Service，这是最安全的选项，可以避免在不必要时以及应用能够轻松重启所有未完成的作业时运行服务。
+- **START_REDELIVER_INTENT**：当Service因内存不足而被系统kill后，则会重建服务，并通过传递给服务的最后一个 Intent 调用 onStartCommand()，任何挂起 Intent均依次传递。与START_STICKY不同的是，<u>其中的传递的Intent将是非空，是最后一次调用startService中的intent</u>。这个值适用于主动执行<u>应该立即恢复</u>的作业（例如下载文件）的服务。
 
-由于每次启动服务（调用startService）时，onStartCommand方法都会被调用，因此我们可以通过该方法使用Intent给Service传递所需要的参数，然后在onStartCommand方法中处理的事件，最后根据需求选择不同的Flag返回值，以达到对程序更友好的控制。好~，以上便是Service在启动状态下的分析，接着我们在来看看绑定状态的Service又是如何处理的？
+由于每次启动服务（调用startService）时，onStartCommand方法都会被调用，因此我们可以通过该方法使用Intent给Service传递所需要的参数，然后在onStartCommand方法中处理的事件，最后根据需求选择不同的Flag返回值，以达到对程序更友好的控制。
 
 # Service绑定服务
 
-绑定服务是Service的另一种变形，当Service处于绑定状态时，其代表着客户端-服务器接口中的服务器。当其他组件（如 Activity）绑定到服务时（有时我们可能需要从Activity组建中去调用Service中的方法，此时Activity以绑定的方式挂靠到Service后，我们就可以轻松地方法到Service中的指定方法），组件（如Activity）可以向Service（也就是服务端）发送请求，或者调用Service（服务端）的方法，此时被绑定的Service（服务端）会接收信息并响应，甚至可以通过绑定服务进行执行进程间通信 (即IPC，这个后面再单独分析)。与启动服务不同的是绑定服务的生命周期通常只在为其他应用组件(如Activity)服务时处于活动状态，不会无限期在后台运行，也就是说宿主(如Activity)解除绑定后，绑定服务就会被销毁。那么在提供绑定的服务时，该如何实现呢？实际上我们必须提供一个 IBinder接口的实现类，该类用以提供客户端用来与服务进行交互的编程接口，该接口可以通过三种方法定义接口：
+特点：
+
+- 组件（如Activity）可以向Service（也就是服务端）发送请求，或者调用Service（服务端）的方法，此时被绑定的Service（服务端）会接收信息并响应，甚至可以通过绑定服务进行执行进程间通信。
+- 绑定服务的生命周期通常只在为其他应用组件(如Activity)服务时处于活动状态，不会无限期在后台运行，也就是说宿主(如Activity)解除绑定后，绑定服务就会被销毁
+
+该如何实现呢？实际上我们必须提供一个 IBinder接口的实现类，该类用以提供客户端用来与服务进行交互的编程接口，该接口可以通过三种方法定义接口：
 
 ## 三种方法
 
 ### 扩展 Binder 类
 
-如果服务是提供给自有应用专用的，并且Service(服务端)与客户端相同的进程中运行（常见情况），则应通过扩展 Binder 类并从 onBind() 返回它的一个实例来创建接口。客户端收到 Binder 后，可利用它直接访问 Binder 实现中以及Service 中可用的公共方法。如果我们的服务只是自有应用的后台工作线程，则优先采用这种方法。 不采用该方式创建接口的唯一原因是，服务被其他应用或不同的进程调用。
+如果服务是<u>提供给自有应用专用</u>的，并且Service(服务端)与客户端相同的进程中运行（常见情况），则应通过扩展 Binder 类并从 onBind() 返回它的一个实例来创建接口。
+
+客户端收到 Binder 后，可利用它直接访问 Binder 实现中以及Service 中可用的公共方法。
+
+如果我们的服务只是自有应用的后台工作线程，则优先采用这种方法。 不采用该方式创建接口的唯一原因是，服务被其他应用或不同的进程调用。
 
 ### 使用 Messenger
 
-Messenger可以翻译为信使，通过它可以在不同的进程中共传递Message对象(Handler中的Messager，因此 Handler 是 Messenger 的基础)，在Message中可以存放我们需要传递的数据，然后在进程间传递。如果需要让接口跨不同的进程工作，则可使用 Messenger 为服务创建接口，客户端就可利用 Message 对象向服务发送命令。同时客户端也可定义自有 Messenger，以便服务回传消息。这是执行进程间通信 (IPC) 的最简单方法，因为 Messenger 会在单一线程中创建包含所有请求的队列，也就是说Messenger是以串行的方式处理客户端发来的消息，这样我们就不必对服务进行线程安全设计了。
+Messenger可以翻译为信使，通过它可以在<u>不同的进程</u>中共传递Message对象(Handler中的Messager，因此 Handler 是 Messenger 的基础)，在Message中可以存放我们需要传递的数据，然后在进程间传递。
+
+如果需要让接口跨不同的进程工作，则可使用 Messenger 为服务创建接口，客户端就可利用 Message 对象向服务发送命令。
+
+同时客户端也可定义自有 Messenger，以便服务回传消息。这是执行进程间通信 (IPC) 的最简单方法，因为 Messenger 会在单一线程中创建包含所有请求的队列，也就是说Messenger是<u>以串行的方式处理客户端发来的消息</u>，这样我们就不必对服务进行线程安全设计了。
 
 ### 使用 AIDL
 
-由于Messenger是以串行的方式处理客户端发来的消息，如果当前有大量消息同时发送到Service(服务端)，Service仍然只能一个个处理，这也就是Messenger跨进程通信的缺点了，因此如果有大量并发请求，Messenger就会显得力不从心了，这时AIDL（Android 接口定义语言）就派上用场了， 但实际上Messenger 的跨进程方式其底层实现 就是AIDL，只不过android系统帮我们封装成透明的Messenger罢了 。因此，如果我们想让服务同时处理多个请求，则应该使用 AIDL。 在此情况下，服务必须具备多线程处理能力，并采用线程安全式设计。使用AIDL必须创建一个定义编程接口的 .aidl 文件。Android SDK 工具利用该文件生成一个实现接口并处理 IPC 的抽象类，随后可在服务内对其进行扩展。
-
-以上3种实现方式，我们可以根据需求自由的选择，但需要注意的是大多数应用“都不会”使用 AIDL 来创建绑定服务，因为它可能要求具备多线程处理能力，并可能导致实现的复杂性增加。因此，AIDL 并不适合大多数应用，本篇中也不打算阐述如何使用AIDL（后面会另开一篇分析AIDL），接下来我们分别针对扩展 Binder 类和Messenger的使用进行分析。
+由于Messenger是以串行的方式处理客户端发来的消息，如果当前有<u>大量消息</u>同时发送到Service(服务端)，Service仍然只能一个个处理，这也就是Messenger跨进程通信的缺点了，因此如果有大量并发请求，Messenger就会显得力不从心了，这时AIDL（Android 接口定义语言）就派上用场了， 但实际上<u>Messenger 的跨进程方式其底层实现 就是AIDL</u>，只不过android系统帮我们封装成透明的Messenger罢了 。因此，如果我们想让服务同时处理多个请求，则应该使用 AIDL。 在此情况下，<u>服务必须具备多线程处理能力，并采用线程安全式设计</u>。使用AIDL必须创建一个定义编程接口的 .aidl 文件。Android SDK 工具利用该文件生成一个实现接口并处理 IPC 的抽象类，随后可在服务内对其进行扩展。
 
 ## 扩展 Binder 类
 
-前面描述过，如果我们的服务仅供本地应用使用，不需要跨进程工作，则可以实现自有 Binder 类，让客户端通过该类直接访问服务中的公共方法。其使用开发步骤如下
+开发步骤：
 
-1.创建BindService服务端，继承自Service并在类中，创建一个实现IBinder 接口的实例对象并提供公共方法给客户端调用
+1. 创建服务端，继承自Service并在类中，创建一个实现IBinder 接口的实例对象并提供公共方法给客户端调用。
 
-2.从 onBind() 回调方法返回此 Binder 实例。
+2. 从 onBind() 回调方法返回此 Binder 实例。
 
-3.在客户端中，从 onServiceConnected() 回调方法接收 Binder，并使用提供的方法调用绑定服务。
+3. 在客户端中，从 onServiceConnected() 回调方法接收 Binder，并使用提供的方法调用绑定服务。
 
-注意：此方式只有在客户端和服务位于同一应用和进程内才有效，如对于需要将 Activity 绑定到在后台播放音乐的自有服务的音乐应用，此方式非常有效。另一点之所以要求服务和客户端必须在同一应用内，是为了便于客户端转换返回的对象和正确调用其 API。服务和客户端还必须在同一进程内，因为此方式不执行任何跨进程编组。
+注意：此方式只有在客户端和服务位于<u>同一应用和进程内</u>才有效，如对于需要将 Activity 绑定到在后台播放音乐的自有服务的音乐应用，此方式非常有效。另一点之所以要求服务和客户端必须在同一应用内，是为了便于客户端转换返回的对象和正确调用其 API。服务和客户端还必须在同一进程内，因为此方式不执行任何跨进程编组。
 以下是一个扩展 Binder 类的实例，先看看Service端的实现BindService.java
 
 ```java
@@ -314,7 +327,7 @@ public class LocalService extends Service{
 }
 ```
 
-BindService类继承自Service，在该类中创建了一个LocalBinder继承自Binder类，LocalBinder中声明了一个getService方法，客户端可访问该方法获取LocalService对象的实例，只要客户端获取到LocalService对象的实例就可调用LocalService服务端的公共方法，如getCount方法，值得注意的是，我们在onBind方法中返回了binder对象，该对象便是LocalBinder的具体实例，而binder对象最终会返回给客户端，客户端通过返回的binder对象便可以与服务端实现交互。接着看看客户端BindActivity的实现：
+LocalService类继承自Service，在该类中创建了一个LocalBinder继承自Binder类，LocalBinder中声明了一个getService方法，客户端可访问该方法获取LocalService对象的实例，只要客户端获取到LocalService对象的实例就可调用LocalService服务端的公共方法，如getCount方法，值得注意的是，我们在onBind方法中返回了binder对象，该对象便是LocalBinder的具体实例，而binder对象最终会返回给客户端，客户端通过返回的binder对象便可以与服务端实现交互。接着看看客户端BindActivity的实现：
 
 ```java
 package com.zejian.ipctest.service;
@@ -426,15 +439,14 @@ public class BindActivity extends Activity {
 
 **onServiceConnected(ComponentName name, IBinder service)**
 
-系统会调用该方法以传递服务的　onBind() 方法返回的 IBinder。其中service便是服务端返回的IBinder实现类对象，通过该对象我们便可以调用获取LocalService实例对象，进而调用服务端的公共方法。而ComponentName是一个封装了组件(Activity, Service, BroadcastReceiver, or ContentProvider)信息的类，如包名，组件描述等信息，较少使用该参数。
+系统会调用该方法以传递服务的　onBind() 方法返回的 IBinder。其中service便是服务端返回的IBinder实现类对象，通过该对象我们便可以调用获取LocalService实例对象，进而调用服务端的公共方法。而ComponentName是一个封装了组件(Activity, Service, BroadcastReceiver, or ContentProvider信息的类，如包名，组件描述等信息，较少使用该参数。
 
 **onServiceDisconnected(ComponentName name)**
 
-Android 系统会在与服务的连接意外中断时（例如当服务崩溃或被终止时）调用该方法。注意:当客户端取消绑定时，系统“绝对不会”调用该方法。
+Android 系统会在与服务的连接意外中断时（例如当服务崩溃或被终止时）调用该方法。注意:<u>当客户端取消绑定时，系统“绝对不会”调用该方法</u>。
 
 ```java
 conn = new ServiceConnection() {
-
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 Log.d(TAG, "绑定成功调用：onServiceConnected");
@@ -472,45 +484,45 @@ Activity通过bindService()绑定到LocalService后，ServiceConnection#onServic
         android:id="@+id/BindService"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="绑定服务器"
-        />
+        android:text="绑定服务器"/>
 
     <Button
         android:id="@+id/unBindService"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="解除绑定"
-        />
+        android:text="解除绑定"/>
 
     <Button
         android:id="@+id/getServiceDatas"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="获取服务方数据"
-        />
+        android:text="获取服务方数据"/>
+    
 </LinearLayout>
 ```
 
 我们运行程序，点击绑定服务并多次点击绑定服务接着多次调用LocalService中的getCount()获取数据，最后调用解除绑定的方法移除服务，其结果如下：
 
-![这里写图片描述](E:\Libraries\notes\se\android\Android_files\20161003123125076)
+![这里写图片描述](imgs\20161003123125076)
 
-通过Log可知，当我们第一次点击绑定服务时，LocalService服务端的onCreate()、onBind方法会依次被调用，此时客户端的ServiceConnection#onServiceConnected()被调用并返回LocalBinder对象，接着调用LocalBinder#getService方法返回LocalService实例对象，此时客户端便持有了LocalService的实例对象，也就可以任意调用LocalService类中的声明公共方法了。更值得注意的是，我们多次调用bindService方法绑定LocalService服务端，而LocalService得onBind方法只调用了一次，那就是在第一次调用bindService时才会回调onBind方法。接着我们点击获取服务端的数据，从Log中看出我们点击了3次通过getCount()获取了服务端的3个不同数据，最后点击解除绑定，此时LocalService的onUnBind、onDestroy方法依次被回调，并且多次绑定只需一次解绑即可。此情景也就说明了绑定状态下的Service生命周期方法的调用依次为onCreate()、onBind、onUnBind、onDestroy。ok~，以上便是同一应用同一进程中客户端与服务端的绑定回调方式。
+通过Log可知，当我们第一次点击绑定服务时，LocalService服务端的onCreate()、onBind方法会依次被调用，此时客户端的ServiceConnection#onServiceConnected()被调用并返回LocalBinder对象，接着调用LocalBinder#getService方法返回LocalService实例对象，此时客户端便持有了LocalService的实例对象，也就可以任意调用LocalService类中的声明公共方法了。
+
+更值得注意的是，我们多次调用bindService方法绑定LocalService服务端，而LocalService得onBind方法只调用了一次，那就是在第一次调用bindService时才会回调onBind方法。接着我们点击获取服务端的数据，从Log中看出我们点击了3次通过getCount()获取了服务端的3个不同数据，最后点击解除绑定，此时LocalService的onUnBind、onDestroy方法依次被回调，并且多次绑定只需一次解绑即可。此情景也就说明了绑定状态下的Service生命周期方法的调用依次为<u>onCreate()、onBind()、onUnBind()、onDestroy()</u>。
 
 ## 使用Messenger
 
 前面了解了如何使用IBinder应用内同一进程的通信后，我们接着来了解服务与远程进程（即不同进程间）通信，而不同进程间的通信，最简单的方式就是使用 Messenger 服务提供通信接口，利用此方式，我们无需使用 AIDL 便可执行进程间通信 (IPC)。以下是 Messenger 使用的主要步骤：
 
-1.服务实现一个 Handler，由其接收来自客户端的每个调用的回调
+1. 服务实现一个 Handler，由其接收来自客户端的每个调用的回调
 
-2.Handler 用于创建 Messenger 对象（对 Handler 的引用）
+2. Handler 用于创建 Messenger 对象（对 Handler 的引用）
 
-3.Messenger 创建一个 IBinder，服务通过 onBind() 使其返回客户端
+3. Messenger 创建一个 IBinder，服务通过 onBind() 使其返回客户端
 
-4.客户端使用 IBinder 将 Messenger（引用服务的 Handler）实例化，然后使用Messenger将 Message 对象发送给服务
+4. 客户端使用 IBinder 将 Messenger（引用服务的 Handler）实例化，然后使用Messenger将 Message 对象发送给服务
 
-5.服务在其 Handler 中（在 handleMessage() 方法中）接收每个 Message
-以下是一个使用 Messenger 接口的简单服务示例，服务端进程实现如下：
+5. 服务在其 Handler 中（在 handleMessage() 方法中）接收每个 Message
+   以下是一个使用 Messenger 接口的简单服务示例，服务端进程实现如下：
 
 ```java
 package com.zejian.ipctest.messenger;
