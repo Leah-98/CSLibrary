@@ -12,6 +12,62 @@ Service(服务)是一个一种可以在后台执行长时间运行操作而没�
 
 当应用组件通过调用 bindService() 绑定到服务时，服务即处于“绑定”状态。绑定服务提供了一个客户端-服务器接口，允许组件与服务进行交互、发送请求、获取结果，甚至是利用进程间通信 (IPC) 跨进程执行这些操作。 仅当与另一个应用组件绑定时，绑定服务才会运行。 多个组件可以同时绑定到该服务，但全部取消绑定后，该服务即会被销毁。
 
+## 关于启动服务与绑定服务间的转换问题
+
+当启动状态和绑定状态同时存在时，又会是怎么的场景？
+
+虽然服务的状态有启动和绑定两种，但实际上一个服务可以同时是这两种状态，也就是说，它既可以是启动服务（以无限期运行），也可以是绑定服务。有点需要注意的是Android系统仅会为一个Service创建一个实例对象，所以不管是启动服务还是绑定服务，<u>操作的是同一个Service实例</u>，而且由于绑定服务或者启动服务执行顺序问题将会出现以下两种情况：
+
+- **先绑定服务后启动服务**
+
+如果当前Service实例先以绑定状态运行，然后再以启动状态运行，那么绑定服务将会转为启动服务运行，这时如果之前绑定的宿主（Activity）被销毁了，也不会影响服务的运行，服务还是会一直运行下去，指定收到调用停止服务或者内存不足时才会销毁该服务。
+
+- **先启动服务后绑定服务**
+
+ 如果当前Service实例先以启动状态运行，然后再以绑定状态运行，当前启动服务并不会转为绑定服务，但是还是会与宿主绑定，只是即使宿主解除绑定后，服务依然按启动服务的生命周期在后台运行，直到有Context调用了stopService()或是服务本身调用了stopSelf()方法抑或内存不足时才会销毁服务。
+
+以上两种情况显示出<u>启动服务的优先级确实比绑定服务高一些</u>。不过无论Service是处于启动状态还是绑定状态，或处于启动并且绑定状态，我们都可以像使用Activity那样通过调用 Intent 来使用服务(即使此服务来自另一应用)。 当然，我们也可以通过清单文件将服务声明为私有服务，阻止其他应用访问。最后这里有点需要特殊说明一下的，由于服务在其托管进程的主线程中运行（UI线程），它既不创建自己的线程，也不在单独的进程中运行（除非另行指定）。 这意味着，如果服务将执行任何<u>耗时事件或阻止性操作</u>（例如 MP3 播放或联网）时，则<u>应在服务内创建新线程来完成这项工作</u>，简而言之，耗时操作应该另起线程执行。只有通过使用单独的线程，才可以降低发生“应用无响应”(ANR) 错误的风险，这样应用的主线程才能专注于用户与 Activity 之间的交互， 以达到更好的用户体验。
+
+**关于通过bindService启动的service，在unbindService后service是否继续运行的讨论**：
+
+有三种情况：如果直接使用服务，则没有必要进行绑定，但是如果要使用服务里面的方法，则要进行绑定。具体的启动情况有下：
+
+1. 当启动时，单独调用bindService方法，在unbindService后，会执行service的onUnbind，在执行onDestroy方法。
+
+2. 当启动时，先调用startService，再调用bindService方法后，在unbindService后，会执行service的onUnbind，不会执行onDestroy方法。除非你在执行stopService.
+
+  3. 先调用startService，在调用stopService，会执行service的onDestroy方法。
+
+# 管理服务生命周期
+
+关于Service生命周期方法的执行顺序，前面我们已分析得差不多了，这里重新给出一张执行的流程图（出自Android官网）
+
+![这里写图片描述](imgs\20161004164521384)
+
+其中左图显示了使用 startService() 所创建的服务的生命周期，右图显示了使用 bindService() 所创建的服务的生命周期。通过图中的生命周期方法，我们可以监控Service的整体执行过程，包括创建，运行，销毁，关于Service不同状态下的方法回调在前面的分析中已描述得很清楚，这里就不重复了，下面给出官网对生命周期的原文描述：
+
+> 服务的整个生命周期从调用 onCreate() 开始起，到 onDestroy() 返回时结束。与 Activity 类似，服务也在 onCreate() 中完成初始设置，并在 onDestroy() 中释放所有剩余资源。例如，音乐播放服务可以在 onCreate() 中创建用于播放音乐的线程，然后在 onDestroy() 中停止该线程。
+>
+> 无论服务是通过 startService() 还是 bindService() 创建，都会为所有服务调用 onCreate() 和 onDestroy() 方法。
+>
+> 服务的有效生命周期从调用 onStartCommand() 或 onBind() 方法开始。每种方法均有 Intent 对象，该对象分别传递到 startService() 或 bindService()。
+>
+> 对于启动服务，有效生命周期与整个生命周期同时结束（即便是在 onStartCommand() 返回之后，服务仍然处于活动状态）。对于绑定服务，有效生命周期在 onUnbind() 返回时结束。
+
+从执行流程图来看，服务的生命周期比 Activity 的生命周期要简单得多。但是，我们必须密切关注如何创建和销毁服务，因为服务可以在用户没有意识到的情况下运行于后台。管理服务的生命周期（从创建到销毁）有以下两种情况：
+
+- 启动服务
+
+该服务在其他组件调用 startService() 时创建，然后无限期运行，且必须通过调用 stopSelf() 来自行停止运行。此外，其他组件也可以通过调用 stopService() 来停止服务。服务停止后，系统会将其销毁。
+
+- 绑定服务
+
+该服务在另一个组件（客户端）调用 bindService() 时创建。然后，客户端通过 IBinder 接口与服务进行通信。客户端可以通过调用 unbindService() 关闭连接。多个客户端可以绑定到相同服务，而且当所有绑定全部取消后，系统即会销毁该服务。 （服务不必自行停止运行）
+
+虽然可以通过以上两种情况管理服务的生命周期，但是我们还必须考虑另外一种情况，也就是启动服务与绑定服务的结合体，也就是说，我们可以绑定到已经使用 startService() 启动的服务。例如，可以通过使用 Intent（标识要播放的音乐）调用 startService() 来启动后台音乐服务。随后，可能在用户需要稍加控制播放器或获取有关当前播放歌曲的信息时，Activity 可以通过调用 bindService() 绑定到服务。在这种情况下，除非所有客户端均取消绑定，否则 stopService() 或 stopSelf() 不会真正停止服务。因此在这种情况下我们需要特别注意。
+
+  1. 
+
 # Service在清单文件中的声明
 
 前面说过Service分为启动状态和绑定状态两种，但无论哪种具体的Service启动类型，都是通过继承Service基类自定义而来，也都需要在AndroidManifest.xml中声明，那么在分析这两种状态之前，我们先来了解一下Service在AndroidManifest.xml中的声明语法，其格式如下：
@@ -522,7 +578,8 @@ Activity通过bindService()绑定到LocalService后，ServiceConnection#onServic
 4. 客户端使用 IBinder 将 Messenger（引用服务的 Handler）实例化，然后使用Messenger将 Message 对象发送给服务
 
 5. 服务在其 Handler 中（在 handleMessage() 方法中）接收每个 Message
-   以下是一个使用 Messenger 接口的简单服务示例，服务端进程实现如下：
+
+以下是一个使用 Messenger 接口的简单服务示例，服务端进程实现如下：
 
 ```java
 package com.zejian.ipctest.messenger;
@@ -689,19 +746,20 @@ public class ActivityMessenger extends Activity {
 }
 ```
 
-在客户端进程中，我们需要创建一个ServiceConnection对象，该对象代表与服务端的链接，当调用bindService方法将当前Activity绑定到MessengerService时，onServiceConnected方法被调用，利用服务端传递给来的底层Binder对象构造出与服务端交互的Messenger对象，接着创建与服务交互的消息实体Message，将要发生的信息封装在Message中并通过Messenger实例对象发送给服务端。关于ServiceConnection、bindService方法、unbindService方法，前面已分析过，这里就不重复了，最后我们需要在清单文件声明Service和Activity，由于要测试不同进程的交互，则需要将Service放在单独的进程中，因此Service声明如下：
+在客户端进程中，我们需要创建一个ServiceConnection对象，该对象代表与服务端的链接，当调用bindService方法将当前Activity绑定到MessengerService时，onServiceConnected方法被调用，利用服务端传递给来的底层Binder对象构造出与服务端交互的Messenger对象，接着创建与服务交互的消息实体Message，将要发生的信息封装在Message中并通过Messenger实例对象发送给服务端。关于ServiceConnection、bindService方法、unbindService方法，前面已分析过，这里就不重复了，最后我们需要在清单文件声明Service和Activity，由于要测试不同进程的交互，则需要<u>将Service放在单独的进程中</u>，因此Service声明如下：
 
 ```xml
 <service android:name=".messenger.MessengerService"
-         android:process=":remote"
-        />
+         android:process=":remote"/>
 ```
 
 接着多次点击绑定服务，然后发送信息给服务端，最后解除绑定，Log打印如下：
 
-![这里写图片描述](E:\Libraries\notes\se\android\Android_files\20161003162626563)
+![这里写图片描述](imgs\20161003162626563)
 
-通过上述例子可知Service服务端确实收到了客户端发送的信息，而且在Messenger中进行数据传递必须将数据封装到Message中，因为Message和Messenger都实现了Parcelable接口，可以轻松跨进程传递数据（关于Parcelable接口可以看博主的另一篇文章：序列化与反序列化之Parcelable和Serializable浅析），而Message可以传递的信息载体有，what,arg1,arg2,Bundle以及replyTo，至于object字段，对于同一进程中的数据传递确实很实用，但对于进程间的通信，则显得相当尴尬，在android2.2前，object不支持跨进程传输，但即便是android2.2之后也只能传递android系统提供的实现了Parcelable接口的对象，也就是说我们通过自定义实现Parcelable接口的对象无法通过object字段来传递，因此object字段的实用性在跨进程中也变得相当低了。不过所幸我们还有Bundle对象，Bundle可以支持大量的数据类型。接着从Log我们也看出无论是使用拓展Binder类的实现方式还是使用Messenger的实现方式，它们的生命周期方法的调用顺序基本是一样的，即onCreate()、onBind、onUnBind、onDestroy，而且多次绑定中也只有第一次时才调用onBind()。好~，以上的例子演示了如何在服务端解释客户端发送的消息，但有时候我们可能还需要服务端能回应客户端，这时便需要提供双向消息传递了，下面就来实现一个简单服务端与客户端双向消息传递的简单例子。
+通过上述例子可知Service服务端确实收到了客户端发送的信息，而且在Messenger中进行数据传递必须将数据封装到Message中，因为Message和Messenger都实现了Parcelable接口，可以轻松跨进程传递数据，而Message可以传递的信息载体有，what,arg1,arg2,Bundle以及replyTo，至于object字段，对于同一进程中的数据传递确实很实用，但对于进程间的通信，则显得相当尴尬，在android2.2前，object不支持跨进程传输，但即便是android2.2之后也只能传递android系统提供的实现了Parcelable接口的对象，也就是说我们通过自定义实现Parcelable接口的对象无法通过object字段来传递，因此object字段的实用性在跨进程中也变得相当低了。不过所幸我们还有Bundle对象，Bundle可以支持大量的数据类型。接着从Log我们也看出无论是使用拓展Binder类的实现方式还是使用Messenger的实现方式，它们的生命周期方法的调用顺序基本是一样的，即onCreate()、onBind、onUnBind、onDestroy，而且多次绑定中也只有第一次时才调用onBind()。
+
+简单服务端与客户端双向消息传递的简单例子：
 
 先来看看服务端的修改，在服务端，我们只需修改IncomingHandler，收到消息后，给客户端回复一条信息。
 
@@ -745,7 +803,6 @@ public class ActivityMessenger extends Activity {
      */
     private Messenger mRecevierReplyMsg= new Messenger(new ReceiverReplyMsgHandler());
 
-
     private static class ReceiverReplyMsgHandler extends Handler{
         private static final String TAG = "zj";
 
@@ -770,8 +827,8 @@ public class ActivityMessenger extends Activity {
         if (!mBound) return;
         // 创建与服务交互的消息实体Message
         Message msg = Message.obtain(null, MessengerService.MSG_SAY_HELLO, 0, 0);
-        //把接收服务器端的回复的Messenger通过Message的replyTo参数传递给服务端
-        msg.replyTo=mRecevierReplyMsg;
+        // 把接收服务器端的回复的Messenger通过Message的replyTo参数传递给服务端
+        msg.replyTo = mRecevierReplyMsg;
         try {
             //发送消息
             mService.send(msg);
@@ -781,53 +838,40 @@ public class ActivityMessenger extends Activity {
     }
 ```
 
-ok~，到此服务端与客户端双向消息传递的简单例子修改完成，我们运行一下代码，看看Log打印，如下：
+![这里写图片描述](imgs\20161003173153947)
 
-![这里写图片描述](E:\Libraries\notes\se\android\Android_files\20161003173153947)
+原理图：
 
-由Log可知，服务端和客户端确实各自收到了信息，到此我们就把采用Messenge进行跨进程通信的方式分析完了，最后为了辅助大家理解，这里提供一张通过Messenge方式进行进程间通信的原理图：
-
-![这里写图片描述](E:\Libraries\notes\se\android\Android_files\20161004221152656)
+![这里写图片描述](imgs\20161004221152656)
 
 ## 关于绑定服务的注意点
 
-1. 多个客户端可同时连接到一个服务。不过，只有在第一个客户端绑定时，系统才会调用服务的 onBind() 方法来检索 IBinder。系统随后无需再次调用 onBind()，便可将同一 IBinder 传递至任何其他绑定的客户端。当最后一个客户端取消与服务的绑定时，系统会将服务销毁（除非 startService() 也启动了该服务）。
+1. 多个客户端可同时连接到一个服务。不过，只有在<u>第一个客户端绑定时，系统才会调用服务的 onBind() 方法来检索 IBinder</u>。<u>系统随后无需再次调用 onBind()，便可将同一 IBinder 传递至任何其他绑定的客户端</u>。当最后一个客户端取消与服务的绑定时，系统会将服务销毁（除非 startService() 也启动了该服务）。
 
 2. 通常情况下我们应该在客户端生命周期（如Activity的生命周期）的引入 (bring-up) 和退出 (tear-down) 时刻设置绑定和取消绑定操作，以便控制绑定状态下的Service，一般有以下两种情况：
    - 如果只需要在 Activity 可见时与服务交互，则应在 onStart() 期间绑定，在 onStop() 期间取消绑定。
-   - 如果希望 Activity 在后台停止运行状态下仍可接收响应，则可在 onCreate() 期间绑定，在 onDestroy() 期间取消绑定。需要注意的是，这意味着 Activity 在其整个运行过程中（甚至包括后台运行期间）都需要使用服务，因此如果服务位于其他进程内，那么当提高该进程的权重时，系统很可能会终止该进程。
+   - 如果希望 Activity 在后台停止运行状态下仍可接收响应，则可在 onCreate() 期间绑定，在 onDestroy() 期间取消绑定。需要注意的是，这意味着 Activity 在其整个运行过程中（甚至包括后台运行期间）都需要使用服务，因此如果服务位于其他进程内，那么当提高该进程的权重时，系统很可能会终止服务进程。
 
-3. 通常情况下(注意)，切勿在 Activity 的 onResume() 和 onPause() 期间绑定和取消绑定，因为每一次生命周期转换都会发生这些回调，这样反复绑定与解绑是不合理的。此外，如果应用内的多个 Activity 绑定到同一服务，并且其中两个 Activity 之间发生了转换，则如果当前 Activity 在下一次绑定（恢复期间）之前取消绑定（暂停期间），系统可能会销毁服务并重建服务，因此服务的绑定不应该发生在 Activity 的 onResume() 和 onPause()中。
-4. 我们应该始终捕获 DeadObjectException DeadObjectException 异常，该异常是在连接中断时引发的，表示调用的对象已死亡，也就是Service对象已销毁，这是远程方法引发的唯一异常，DeadObjectException继承自RemoteException，因此我们也可以捕获RemoteException异常。
-5. 应用组件（客户端）可通过调用 bindService() 绑定到服务,Android 系统随后调用服务的 onBind() 方法，该方法返回用于与服务交互的 IBinder，而该绑定是异步执行的。
+3. 通常情况下(注意)，<u>切勿在 Activity 的 onResume() 和 onPause() 期间绑定和取消绑定</u>，因为每一次生命周期转换都会发生这些回调，这样反复绑定与解绑是不合理的。此外，如果应用内的多个 Activity 绑定到同一服务，并且其中两个 Activity 之间发生了转换，则如果当前 Activity 在下一次绑定（恢复期间）之前取消绑定（暂停期间），系统可能会销毁服务并重建服务，因此服务的绑定不应该发生在 Activity 的 onResume() 和 onPause()中。
+4. 我们应该始终<u>捕获 DeadObjectException DeadObjectException 异常</u>，该异常是在连接中断时引发的，表示调用的对象已死亡，也就是Service对象已销毁，这是远程方法引发的唯一异常，DeadObjectException继承自RemoteException，因此我们也可以捕获RemoteException异常。
+   - 如何始终捕获某一异常？
+5. 应用组件（客户端）可通过调用 bindService() 绑定到服务,Android 系统随后调用服务的 onBind() 方法，该方法返回用于与服务交互的 IBinder，<u>而该绑定是异步执行的</u>。
 
-# 关于启动服务与绑定服务间的转换问题
+# 前台服务
 
-通过前面对两种服务状态的分析，相信大家已对Service的两种状态有了比较清晰的了解，那么现在我们就来分析一下当启动状态和绑定状态同时存在时，又会是怎么的场景？
+## 前台服务的创建及通知
 
-虽然服务的状态有启动和绑定两种，但实际上一个服务可以同时是这两种状态，也就是说，它既可以是启动服务（以无限期运行），也可以是绑定服务。有点需要注意的是Android系统仅会为一个Service创建一个实例对象，所以不管是启动服务还是绑定服务，操作的是同一个Service实例，而且由于绑定服务或者启动服务执行顺序问题将会出现以下两种情况：
+前台服务被认为是用户主动意识到的一种服务，因此在内存不足时，系统也不会考虑将其终止<u>。 前台服务必须为状态栏提供通知</u>，状态栏位于“正在进行”标题下方，这意味着除非服务停止或从前台删除，否则不能清除通知。例如将从服务播放音乐的音乐播放器设置为在前台运行，这是因为用户明确意识到其操作。 状态栏中的通知可能表示正在播放的歌曲，并允许用户启动 Activity 来与音乐播放器进行交互。
 
-- 先绑定服务后启动服务
-
-如果当前Service实例先以绑定状态运行，然后再以启动状态运行，那么绑定服务将会转为启动服务运行，这时如果之前绑定的宿主（Activity）被销毁了，也不会影响服务的运行，服务还是会一直运行下去，指定收到调用停止服务或者内存不足时才会销毁该服务。
-
-- 先启动服务后绑定服务
-
- 如果当前Service实例先以启动状态运行，然后再以绑定状态运行，当前启动服务并不会转为绑定服务，但是还是会与宿主绑定，只是即使宿主解除绑定后，服务依然按启动服务的生命周期在后台运行，直到有Context调用了stopService()或是服务本身调用了stopSelf()方法抑或内存不足时才会销毁服务。
-
-以上两种情况显示出启动服务的优先级确实比绑定服务高一些。不过无论Service是处于启动状态还是绑定状态，或处于启动并且绑定状态，我们都可以像使用Activity那样通过调用 Intent 来使用服务(即使此服务来自另一应用)。 当然，我们也可以通过清单文件将服务声明为私有服务，阻止其他应用访问。最后这里有点需要特殊说明一下的，由于服务在其托管进程的主线程中运行（UI线程），它既不创建自己的线程，也不在单独的进程中运行（除非另行指定）。 这意味着，如果服务将执行任何耗时事件或阻止性操作（例如 MP3 播放或联网）时，则应在服务内创建新线程来完成这项工作，简而言之，耗时操作应该另起线程执行。只有通过使用单独的线程，才可以降低发生“应用无响应”(ANR) 错误的风险，这样应用的主线程才能专注于用户与 Activity 之间的交互， 以达到更好的用户体验。
-
-# 前台服务以及通知发送
-
-前台服务被认为是用户主动意识到的一种服务，因此在内存不足时，系统也不会考虑将其终止。 前台服务必须为状态栏提供通知，状态栏位于“正在进行”标题下方，这意味着除非服务停止或从前台删除，否则不能清除通知。例如将从服务播放音乐的音乐播放器设置为在前台运行，这是因为用户明确意识到其操作。 状态栏中的通知可能表示正在播放的歌曲，并允许用户启动 Activity 来与音乐播放器进行交互。如果需要设置服务运行于前台， 我们该如何才能实现呢？Android官方给我们提供了两个方法，分别是startForeground()和stopForeground()，这两个方式解析如下：
+设置服务运行于前台的方法：
 
 - startForeground(int id, Notification notification)
 
-该方法的作用是把当前服务设置为前台服务，其中id参数代表唯一标识通知的整型数，需要注意的是提供给 startForeground() 的整型 ID 不得为 0，而notification是一个状态栏的通知。
+该方法的作用是把当前服务设置为前台服务，其中id参数代表唯一标识通知的整型数，需要注意的是提供给 startForeground() 的整型 ID <u>不得为 0</u>，而notification是一个状态栏的通知。
 
 - stopForeground(boolean removeNotification)
 
-该方法是用来从前台删除服务，此方法传入一个布尔值，指示是否也删除状态栏通知，true为删除。 注意该方法并不会停止服务。 但是，如果在服务正在前台运行时将其停止，则通知也会被删除。
+该方法是用来从前台删除服务，此方法传入一个布尔值，<u>指示是否也删除状态栏通知，true为删除</u>。 注意该方法<u>并不会停止服务</u>。 但是，<u>如果在服务正在前台运行时将其停止，则通知也会被删除</u>。
 
 下面我们结合一个简单案例来使用以上两个方法，ForegroundService代码如下：
 
@@ -969,58 +1013,92 @@ public class ForegroundActivity extends Activity {
 }
 ```
 
-# 服务Service与线程Thread的区别
+## Service保活
 
-- 两者概念的迥异
+### 【情况1】因内存资源不足而杀死Service
 
-  - Thread 是程序执行的最小单元，它是分配CPU的基本单位，android系统中UI线程也是线程的一种，当然Thread还可以用于执行一些耗时异步的操作。
+这种情况比较容易处理，可将onStartCommand() 方法的返回值设为 START_STICKY或START_REDELIVER_INTENT ，该值表示服务在内存资源紧张时被杀死后，在内存资源足够时再恢复。也可将Service设置为前台服务，这样就有比较高的优先级，在内存资源紧张时也不会被杀掉。这两点的实现，我们在前面已分析过和实现过这里就不重复。简单代码如下：
 
-  - Service是Android的一种机制，服务是运行在主线程上的，它是由系统进程托管。它与其他组件之间的通信类似于client和server，是一种轻量级的IPC通信，这种通信的载体是binder，它是在linux层交换信息的一种IPC，而所谓的Service后台任务只不过是指没有UI的组件罢了。
+```java
+/**
+     * 返回 START_STICKY或START_REDELIVER_INTENT
+     * @param intent
+     * @param flags
+     * @param startId
+     * @return
+     */
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+//        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
+    }
+```
 
-- 两者的执行任务迥异
+### 【情况2】用户通过 settings -> Apps -> Running -> Stop 方式杀死Service
 
-  - 在android系统中，线程一般指的是工作线程(即后台线程)，而主线程是一种特殊的工作线程，它负责将事件分派给相应的用户界面小工具，如绘图事件及事件响应，因此为了保证应用 UI 的响应能力主线程上不可执行耗时操作。如果执行的操作不能很快完成，则应确保它们在单独的工作线程执行。
+这种情况是用户手动干预的，不过幸运的是这个过程会执行Service的生命周期，也就是onDestory方法会被调用，这时便可以在 onDestory() 中发送广播重新启动。这样杀死服务后会立即启动。这种方案是行得通的，但为程序更健全，我们可开启两个服务，相互监听，相互启动。服务A监听B的广播来启动B，服务B监听A的广播来启动A。这里给出第一种方式的代码实现如下：
 
-  - Service 则是android系统中的组件，一般情况下它运行于主线程中，因此在Service中是不可以执行耗时操作的，否则系统会报ANR异常，之所以称Service为后台服务，大部分原因是它本身没有UI，用户无法感知(当然也可以利用某些手段让用户知道)，但如果需要让Service执行耗时任务，可在Service中开启单独线程去执行。
+```java
+package com.zejian.ipctest.neverKilledService;
 
-- 两者使用场景
+import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
 
-  - 当要执行耗时的网络或者数据库查询以及其他阻塞UI线程或密集使用CPU的任务时，都应该使用工作线程(Thread)，这样才能保证UI线程不被占用而影响用户体验。
+/**
+ * Created by zejian
+ * Time 2016/10/4.
+ * Description:用户通过 settings -> Apps -> Running -> Stop 方式杀死Service
+ */
+public class ServiceKilledByAppStop extends Service{
 
-  - 在应用程序中，如果需要长时间的在后台运行，而且不需要交互的情况下，使用服务。比如播放音乐，通过Service+Notification方式在后台执行同时在通知栏显示着。
+    private BroadcastReceiver mReceiver;
+    private IntentFilter mIF;
 
-- 两者的最佳使用方式
-  - 在大部分情况下，Thread和Service都会结合着使用，比如下载文件，一般会通过Service在后台执行+Notification在通知栏显示+Thread异步下载，再如应用程序会维持一个Service来从网络中获取推送服务。在Android官方看来也是如此，所以官网提供了一个Thread与Service的结合来方便我们执行后台耗时任务，它就是IntentService，(如果想更深入了解IntentService，可以看博主的另一篇文章：Android 多线程之IntentService 完全详解)，当然 IntentService并不适用于所有的场景，但它的优点是使用方便、代码简洁，不需要我们创建Service实例并同时也创建线程，某些场景下还是非常赞的！由于IntentService是单个worker thread，所以任务需要排队，因此不适合大多数的多任务情况。
-- 两者的真正关系
-  - 两者没有半毛钱关系。
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 
-# 管理服务生命周期
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Intent a = new Intent(ServiceKilledByAppStop.this, ServiceKilledByAppStop.class);
+                startService(a);
+            }
+        };
+        mIF = new IntentFilter();
+        //自定义action
+        mIF.addAction("com.restart.service");
+        //注册广播接者
+        registerReceiver(mReceiver, mIF);
+    }
 
-关于Service生命周期方法的执行顺序，前面我们已分析得差不多了，这里重新给出一张执行的流程图（出自Android官网）
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
 
-![这里写图片描述](E:\Libraries\notes\se\android\Android_files\20161004164521384)
+        Intent intent = new Intent();
+        intent.setAction("com.restart.service");
+        //发送广播
+        sendBroadcast(intent);
 
-其中左图显示了使用 startService() 所创建的服务的生命周期，右图显示了使用 bindService() 所创建的服务的生命周期。通过图中的生命周期方法，我们可以监控Service的整体执行过程，包括创建，运行，销毁，关于Service不同状态下的方法回调在前面的分析中已描述得很清楚，这里就不重复了，下面给出官网对生命周期的原文描述：
+        unregisterReceiver(mReceiver);
+    }
+}
+```
 
-> 服务的整个生命周期从调用 onCreate() 开始起，到 onDestroy() 返回时结束。与 Activity 类似，服务也在 onCreate() 中完成初始设置，并在 onDestroy() 中释放所有剩余资源。例如，音乐播放服务可以在 onCreate() 中创建用于播放音乐的线程，然后在 onDestroy() 中停止该线程。
->
-> 无论服务是通过 startService() 还是 bindService() 创建，都会为所有服务调用 onCreate() 和 onDestroy() 方法。
->
-> 服务的有效生命周期从调用 onStartCommand() 或 onBind() 方法开始。每种方法均有 Intent 对象，该对象分别传递到 startService() 或 bindService()。
->
-> 对于启动服务，有效生命周期与整个生命周期同时结束（即便是在 onStartCommand() 返回之后，服务仍然处于活动状态）。对于绑定服务，有效生命周期在 onUnbind() 返回时结束。
+### 【情况3】用户通过 settings -> Apps -> Downloaded -> Force Stop 方式强制性杀死Service
 
-从执行流程图来看，服务的生命周期比 Activity 的生命周期要简单得多。但是，我们必须密切关注如何创建和销毁服务，因为服务可以在用户没有意识到的情况下运行于后台。管理服务的生命周期（从创建到销毁）有以下两种情况：
-
-- 启动服务
-
-该服务在其他组件调用 startService() 时创建，然后无限期运行，且必须通过调用 stopSelf() 来自行停止运行。此外，其他组件也可以通过调用 stopService() 来停止服务。服务停止后，系统会将其销毁。
-
-- 绑定服务
-
-该服务在另一个组件（客户端）调用 bindService() 时创建。然后，客户端通过 IBinder 接口与服务进行通信。客户端可以通过调用 unbindService() 关闭连接。多个客户端可以绑定到相同服务，而且当所有绑定全部取消后，系统即会销毁该服务。 （服务不必自行停止运行）
-
-虽然可以通过以上两种情况管理服务的生命周期，但是我们还必须考虑另外一种情况，也就是启动服务与绑定服务的结合体，也就是说，我们可以绑定到已经使用 startService() 启动的服务。例如，可以通过使用 Intent（标识要播放的音乐）调用 startService() 来启动后台音乐服务。随后，可能在用户需要稍加控制播放器或获取有关当前播放歌曲的信息时，Activity 可以通过调用 bindService() 绑定到服务。在这种情况下，除非所有客户端均取消绑定，否则 stopService() 或 stopSelf() 不会真正停止服务。因此在这种情况下我们需要特别注意。
+这种方式就比较悲剧了，因为是直接kill运行程序的，不会走生命周期的过程,前面两种情况只要是执行Force Stop ，也就废了。也就是说这种情况下无法让服务重启，或者只能去设置Force Stop 无法操作了，不过也就没必要了，太流氓了。。。。
 
 # Android 5.0以上的隐式启动问题
 
@@ -1105,137 +1183,11 @@ startService(serviceIntent);
 
 到此问题完美解决。
 
-# 如何保证服务不被杀死
 
-实际上这种做法并不推荐，但是既然谈到了，我们这里就给出一些实现思路吧。主要分以下3种情况
 
-- 因内存资源不足而杀死Service
 
-这种情况比较容易处理，可将onStartCommand() 方法的返回值设为 START_STICKY或START_REDELIVER_INTENT ，该值表示服务在内存资源紧张时被杀死后，在内存资源足够时再恢复。也可将Service设置为前台服务，这样就有比较高的优先级，在内存资源紧张时也不会被杀掉。这两点的实现，我们在前面已分析过和实现过这里就不重复。简单代码如下：
 
-```java
-/**
-     * 返回 START_STICKY或START_REDELIVER_INTENT
-     * @param intent
-     * @param flags
-     * @param startId
-     * @return
-     */
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-//        return super.onStartCommand(intent, flags, startId);
-        return START_STICKY;
-    }
-```
 
-- 用户通过 settings -> Apps -> Running -> Stop 方式杀死Service
 
-这种情况是用户手动干预的，不过幸运的是这个过程会执行Service的生命周期，也就是onDestory方法会被调用，这时便可以在 onDestory() 中发送广播重新启动。这样杀死服务后会立即启动。这种方案是行得通的，但为程序更健全，我们可开启两个服务，相互监听，相互启动。服务A监听B的广播来启动B，服务B监听A的广播来启动A。这里给出第一种方式的代码实现如下：
 
-```java
-package com.zejian.ipctest.neverKilledService;
-
-import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
-
-/**
- * Created by zejian
- * Time 2016/10/4.
- * Description:用户通过 settings -> Apps -> Running -> Stop 方式杀死Service
- */
-public class ServiceKilledByAppStop extends Service{
-
-    private BroadcastReceiver mReceiver;
-    private IntentFilter mIF;
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Intent a = new Intent(ServiceKilledByAppStop.this, ServiceKilledByAppStop.class);
-                startService(a);
-            }
-        };
-        mIF = new IntentFilter();
-        //自定义action
-        mIF.addAction("com.restart.service");
-        //注册广播接者
-        registerReceiver(mReceiver, mIF);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        Intent intent = new Intent();
-        intent.setAction("com.restart.service");
-        //发送广播
-        sendBroadcast(intent);
-
-        unregisterReceiver(mReceiver);
-    }
-}
-```
-
-用户通过 settings -> Apps -> Downloaded -> Force Stop 方式强制性杀死Service
-这种方式就比较悲剧了，因为是直接kill运行程序的，不会走生命周期的过程,前面两种情况只要是执行Force Stop ，也就废了。也就是说这种情况下无法让服务重启，或者只能去设置Force Stop 无法操作了，不过也就没必要了，太流氓了。。。。
-ok~，以上便是保证服务在一定场景下不被杀死的解决思路，关于第3种情况，如果有解决方案，请留言哈。好，关于Service的全部介绍就此完结。
-
-# JobService
-
-JobService是Android L时候官方加入的组件。适用于需要特定条件下才执行后台任务的场景。 由系统统一管理和调度，在特定场景下使用JobService更加灵活和省心，相当于是Service的加强或者优化。
-
-**JobService 与Service的对比**
-
-| 对比角度   | Service                                                      | JobService                                                   | 补充                                                         |
-| ---------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| 实现原理   | 由APP侧发出请求，ActivityManagerService接收请求后进行调度，通知APP侧进行创建，开始(绑定)，停止(解绑)和销毁Service。 | 由APP侧发出请求，JobSchedulerService接收请求后，通过ActivityManagerService去调度JobService的创建，绑定和解绑。并由JobSchedulerService自己进行JobService的开始，取消和停止等操作。 | 从原理上看，JobService的开始，取消和停止是由JobSchedulerService维护的，而不是由ActivityManagerService维护的。这是他们在实现原理上的明显区别。即JobService是由系统负责调用和维护 |
-| 启动条件   | Service的启动并没有什么特定的条件设置。如果说非要有什么具体的执行条件的话，就是APP侧自己根据业务逻辑在适当的时候调用startService()或者bindService()。 | JobService的执行需要至少一个条件。没有条件的JobService是无法启动的，在创建JobInfo的时候会抛出异常。 |                                                              |
-| 运行时间   | onStartCommand()的回调在UI线程，不可执行耗时逻辑，否则可能造成ANR。 | onStartJob()的回调在UI线程，不可执行耗时逻辑，否则可能造成ANR或者Job被强制销毁(超过8s)。并且，JobService里即便新起了线程，处理的时间也不能超过10min，否则Job将被强制销毁。 |                                                              |
-| 启动角度   | onStartCommand()里返回START_STICKY可以告诉AMS在被停止后自动启动。 | onStopJob()里返回true，即可在被强制停止后再度启动起来。      |                                                              |
-| 扩展性     | APP侧可以通过Binder创建远程Service进行IPC。                  | JobService的绑定实际上是由JobSchedulerService自己去做的。绑定后产生的Binder用于和JobSchedulerService进行IPC，APP侧无法通过JobService扩展去实现别的IPC功能。 | Google本来的初衷也不是让JobService实现远程Service的功能。    |
-| 实际应用上 | 适合需要常驻后台，立即执行，进行数据获取，功能维持的场景。比如 音乐播放，定位，邮件收发等。 | 适合不需要常驻后台，不需要立即执行，在某种条件下触发，执行简单任务的场景。比如 联系人信息变化后的快捷方式的更新，定期的更新电话程序的联系人信息，壁纸更改后去从壁纸提取颜色的后台任务。 |                                                              |
-
-简单来讲，Service适合一些优先级较高，执行任务复杂耗时的任务。JobService适合轻量级的灵活的任务。
-
-**JobService API**
-
-| 方法名                                                     | 参数                                                         | 描述                                                         | 补充                                                         |
-| ---------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| onStartJob(JobParameters params)                           | params：包含用于配置/识别作业的参数，系统传递给我们的        | 定义：Job开始的时候的回调，实现实际的工作逻辑。执行该方法时需要返回一个Boolean值，True表示需要执行，返回True时，作业将保持活动状态，直到系统调用jobFinished或者直到该作业所需的条件不再满了 | 注意：如果返回false的话，系统会自动结束本job；只要Job工作正在执行，系统就会代表应用程序保留一个唤醒锁。 在调用此方法之前获取此唤醒锁，并且直到您调用jobFinished（JobParameters，boolean）或系统调用onStopJob（JobParameters）以通知正在执行的作业它过早关闭之后才会释放。 |
-| jobFinished(JobParameters params, boolean wantsReschedule) | wantsReschedule：若希望系统再次执行该Job，则设置为true后返回 | 调用此方法通知JobScheduler该作业已完成其工作。当系统收到此消息时，它会释放为该作业保留的唤醒锁。该操作在Job的任务执行完毕后，APP端自己的调用通知JobScheduler已经完成了任务。 | 注意:该方法执行完后不会回调onStopJob(),但是会回调onDestroy() |
-| onStopJob(JobParameters params)                            | 同上                                                         | 定义：停止该Job。当JobScheduler发觉该Job条件不满足的时候，或者job被抢占被取消的时候的强制回调。即如果系统确定你必须在有机会调用jobFinished（JobParameters，boolean）之前必须停止执行作业，则调用此方法。 | 注意:如果想在这种意外的情况下让Job重新开始，返回值应该设置为true。 |
-| onCreate()                                                 | 父类Service的基础方法，可以覆写来实现一些辅助作用。Service被初始化后的回调。 | 作用：可以在这里设置BroadcastReceiver或者ContentObserver     |                                                              |
-| onDestroy()                                                | 定义：Service被销毁前的回调。                                | 作用：可以在这里注销BroadcastReceiver或者ContentObserver     |                                                              |
-
-上面可以看出，JobService只是实际的执行和停止任务的回调入口。 那如何将这个入口告诉系统，就需要用到JobScheduler了。
-
-# 问题
-
-android 使用service时遇到 java.lang.IllegalArgumentException
-
-https://www.jianshu.com/p/07be44e9b6cf
-
-关于通过bindService启动的service，在unbindService后service是否继续运行的讨论
-
-有三种情况：如果直接使用服务，则没有必要进行绑定，但是如果要使用服务里面的方法，则要进行绑定。具体的启动情况有下：
-
-1. 当启动时，单独调用bindService方法，在unbindService后，会执行service的onUnbind，在执行onDestroy方法。
-
-2. 当启动时，先调用startService，再调用bindService方法后，在unbindService后，会执行service的onUnbind，不会执行onDestroy方法。除非你在执行stopService.
-
-  3. 先调用startService，在调用stopService，会执行service的onDestroy方法。
 
