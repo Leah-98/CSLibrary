@@ -844,6 +844,58 @@ public class ActivityMessenger extends Activity {
 
 ![这里写图片描述](imgs\20161004221152656)
 
+## 使用AIDL
+
+Code&Step：https://blog.csdn.net/weixin_37749732/article/details/124271111
+
+要点：
+
+1. Server中创建一个继承自IAidl.Stub的类，并于onBind()时return
+
+```
+public class MyRemoteService extends Service {
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.e("MyRemoteSerivce", "onBind ");
+        return new StudentService();
+    }
+
+    private class StudentService extends IStudentService.Stub {
+        @Override
+        public Student getStudentById(int id) throws RemoteException {
+            Log.e("MyRemoteSerivce", "getStudentById:" + id);
+            return new Student(id, "wang", 10000);
+        }
+    }
+}
+```
+
+2. Client中的aidl文件放置层级应完全复制自Server
+
+![在这里插入图片描述](E:\personal\CSLibrary\04_Android\imgs\watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAN3p3YW5n,size_20,color_FFFFFF,t_70,g_se,x_16)
+
+3. 绑定到Service时应使用IAidl.Stub.asInterface(iBinder)得到Server的Binder
+
+```
+conn = new ServiceConnection() {
+            	//下面这个方法是bind绑定成功后的回调方法，在server服务端的 onBind返回的studentService
+            	//可以在这里通过iBinder进行获取
+                @Override
+                public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                    Log.e(TAG, "onServiceConnected: ");
+                    studentService = IStudentService.Stub.asInterface(iBinder);
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName componentName) {
+
+                }
+            };
+```
+
+
+
 ## 关于绑定服务的注意点
 
 1. 多个客户端可同时连接到一个服务。不过，只有在<u>第一个客户端绑定时，系统才会调用服务的 onBind() 方法来检索 IBinder</u>。<u>系统随后无需再次调用 onBind()，便可将同一 IBinder 传递至任何其他绑定的客户端</u>。当最后一个客户端取消与服务的绑定时，系统会将服务销毁（除非 startService() 也启动了该服务）。
