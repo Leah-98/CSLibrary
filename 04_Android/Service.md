@@ -850,7 +850,19 @@ Code&Step：https://blog.csdn.net/weixin_37749732/article/details/124271111
 
 要点：
 
-1. Server中创建一个继承自IAidl.Stub的类，并于onBind()时return
+1. Server中创建并使用AIDL：
+
+   1.创建AIDL文件
+
+   ![image-20220524160206554](imgs\image-20220524160206554.png)
+
+   2.自动生成对应的Java文件
+
+   ![image-20220524161459959](imgs\image-20220524161459959.png)
+
+   ![image-20220524210518733](imgs\image-20220524210518733.png)
+
+2. Server中创建一个继承自IAidl.Stub的类，并于onBind()时return
 
 ```
 public class MyRemoteService extends Service {
@@ -1153,6 +1165,8 @@ public class ServiceKilledByAppStop extends Service{
 这种方式就比较悲剧了，因为是直接kill运行程序的，不会走生命周期的过程,前面两种情况只要是执行Force Stop ，也就废了。也就是说这种情况下无法让服务重启，或者只能去设置Force Stop 无法操作了，不过也就没必要了，太流氓了。。。。
 
 # Android 5.0以上的隐式启动问题
+
+![image-20220524155730915](imgs\image-20220524155730915.png)
 
 既然有隐式启动，那么就会有显示启动，那就先来了解一下什么是隐式启动和显示启动。
 
