@@ -139,58 +139,9 @@ step3 检查权限请求返回代码
 
 ![image-20220302164916295](Android_files\image-20220302164916295.png)
 
-# 安卓四大组件
-
-- Activity--->配合View展示界面
-- Service--->长时间在后台运行不与用户直接交互
-- BroadcastReceiver--->接收广播
-- ContentProvider--->提供数据给其他模块使用
-
 # Navigation导航
 
 https://juejin.cn/post/6898234461361307655
-
-
-
-# Application
-
-![image-20220315172918003](Android_files\image-20220315172918003.png)
-
-**作用**
-
-Application对象全局可访问，且全程陪同应用进程。所以特别适合完成以下任务:
-
-共享全局状态
-
-初始化全应用所需的服务
-
-**回调函数**
-
-Application对象由Android系统管理，它的回调函数都运行于U线程。
-
-onCreate
-
-onConfigurationChanged
-
-比如语言变更和屏幕方向改变
-
-onLowMemory
-
-Application对象vs.静态单例
-
-静态单例模块化程度更好
-
-Application就是一个context，所以有访问资源的能力>静态单例可以接受context参数
-
-Application对象能接收系统回调，自动知悉系统环境变化> Application对象的生命周期由系统控制
-
-如果单例能实现需求就用单例
-
-# 四大组件
-
-Android四大组件其实就是在AndroidManifest.xml里的在application下记录的标签
-
-android:exported属性代表这个组件能否被其他应用调用，true时可以，false不行；当有intent-filter时默认为true，没有时默认为false
 
 # 本地数据存储
 
@@ -495,75 +446,6 @@ Cursor c2 = db.query("test_db",null,null,null,null,"group by (age)","having sex=
 **数据库更新、升级、降级**
 
 https://www.jianshu.com/p/65923fa3e3dc
-
-## ContentProvider
-
-Android四大组件之一，为存储和获取数据提供统一的接口。可以在不同的应用程序之间共享数据。对于ContentProvier而言，无论数据的来源是什么，它都认为是种表，然后把数据组织成表格。
-
-![image-20220602155655369](E:\notes\se\android\Android_files\image-20220602155655369.png)
-
-使用一：自定义ContentProvider
-
-1.配置ContentProvider
-
-(1)自定义类继承于ContentProvider，实现要求的方法
-
-(2)在配置文件中通过provider标签配置，通过android:name属
-性指定待配置的类，通过android:authorities属性授权，指定当前内容提供者的uri标识，必须唯一。
-
-![image-20220604122823328](E:\notes\se\android\Android_files\image-20220604122823328.png)
-
-2.自定义ContentProvider
-
-(1)onCreate，系统启动后，第一次启动ContentProvider所在的程序时调用；可以使用文件或数据库形式存储。
-
-![image-20220604124212022](E:\notes\se\android\Android_files\image-20220604124212022.png)
-
-![image-20220604124251377](E:\notes\se\android\Android_files\image-20220604124251377.png)
-
-（2）insert
-
-![image-20220604130349751](E:\notes\se\android\Android_files\image-20220604130349751.png)
-
-（3） query
-
-![image-20220604131559840](E:\notes\se\android\Android_files\image-20220604131559840.png)
-
-(4)delete
-
-![image-20220604131207528](E:\notes\se\android\Android_files\image-20220604131207528.png)
-
-(5)update
-
-
-
-3.使用ContentResolver
-
- 	cr = getContentResolver();
-
-![image-20220604125735433](E:\notes\se\android\Android_files\image-20220604125735433.png)
-
-![image-20220604131125383](E:\notes\se\android\Android_files\image-20220604131125383.png)
-
-![image-20220604132057788](E:\notes\se\android\Android_files\image-20220604132057788.png)
-
-4.使用UrlMatcher
-
-![image-20220604133346018](E:\notes\se\android\Android_files\image-20220604133346018.png)
-
-#代表任意数字内容
-
-*代表任意字符内容
-
-![image-20220604133251016](E:\notes\se\android\Android_files\image-20220604133251016.png)
-
-5.利用Url添加内容
-
-![image-20220604133952624](E:\notes\se\android\Android_files\image-20220604133952624.png)
-
-![image-20220604134012197](E:\notes\se\android\Android_files\image-20220604134012197.png)
-
-使用二：使用系统的ContentProvider
 
 ## 缓存
 
