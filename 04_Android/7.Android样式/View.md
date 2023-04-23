@@ -21,7 +21,7 @@ public View inflate(int resource, ViewGroup root, boolean attachToRoot)
 
 无需将 resource 指定的布局添加到 root 中，同时没有任何 ViewGroup 容器来协助 resource 指定的布局的根元素生成布局参数 LayoutParams。
 
-![image-20220318085621401](Android_files\image-20220318085621401.png)
+![image-20220318085621401](..\imgs\image-20220318085621401.png)
 
 情况二： root 不为 null，attachToRoot 为 true；
 
@@ -29,13 +29,13 @@ public View inflate(int resource, ViewGroup root, boolean attachToRoot)
 
 使用方法一即未设置 attachToRoot 参数时，如果 root 不为 null，attachToRoot 参数默认为true。
 
-![image-20220318090611027](Android_files\image-20220318090611027.png)
+![image-20220318090611027](..\imgs\image-20220318090611027.png)
 
 情况三： root 不为 null，attachToRoot 为 false；
 
 无需将 resource 指定的布局添加到 root 中，`inflate()` 方法返回 resource 指定的布局 View，根元素是自身的最外层，View 不存在父 ViewGroup，但是可以根据 root 的 LayoutParams 进行测量和放置。
 
-![image-20220318090758703](Android_files\image-20220318090758703.png)
+![image-20220318090758703](..\imgs\image-20220318090758703.png)
 
 情况三不解之处在于，既然 attachToRoot 为 false，无需将 resource 指定的布局添加到 root 中，那么为什么 root 仍然不为 null？创建的 View 必然包含 layout 属性，但是这些属性需要在 ViewGroup 容器中才能生效，根据 ViewGroup 容器的 LayoutParams 进行测量和放置 View。
 
@@ -43,7 +43,7 @@ public View inflate(int resource, ViewGroup root, boolean attachToRoot)
 
 情况一和情况三依赖手动添加 View。
 
-![image-20220318091010325](Android_files\image-20220318091010325.png)
+![image-20220318091010325](..\imgs\image-20220318091010325.png)
 
 **LayoutParams**
 
@@ -104,7 +104,7 @@ onInterceptTouchEvent()
 
 onTouchEvent()
 
-![image-20220318100206406](Android_files\image-20220318100206406.png)
+![image-20220318100206406](..\imgs\image-20220318100206406.png)
 
 事件分发顺序：由 Activity 开始先传递给 ViewGroup 再传递给 View。
 
@@ -232,11 +232,11 @@ setTypeface(Typeface typeface);
 //字体样式
 ```
 
-![image-20220608164537262](E:\notes\se\android\Android_files\image-20220608164537262.png)
+![image-20220608164537262](..\imgs\image-20220608164537262.png)
 
 **状态的存储与恢复**
 
- ![image-20220608105151749](E:\notes\se\android\Android_files\image-20220608105151749.png)
+ ![image-20220608105151749](..\imgs\image-20220608105151749.png)
 
 需要视图设置id
 
@@ -326,7 +326,7 @@ public class CustomerView extends AppCompatImageView {
 
 ## ProgressBar
 
-**属性**
+**【属性】**
 
 ```xml
 progress="" //设置进度
@@ -338,7 +338,7 @@ indeterminate="true" //设置进度条一直滚动
 
 ## ImageView
 
-**属性**
+**【属性】**
 
 ```xml
 scaleType
@@ -364,7 +364,7 @@ TalkBack就会大声朗读出用户目前正在浏览的内容。TextView控件T
 
 #### FloatingActionButton
 
-**支持库**
+**【支持库】**
 
 android.support.design.widget.FloatingActionButton
 
@@ -372,11 +372,7 @@ android.support.design.widget.FloatingActionButton
     compile 'com.android.support:design:25.3.1'
 ```
 
-**继承**
-
-Object > View > ImageView > ImageButton > FloatingActionButton
-
-**属性**
+**【属性】**
 
 ````java
 //设置不同的图片
@@ -464,7 +460,7 @@ android:autoSizeStepGranularity：
 
 ### Button
 
-**属性**
+**【属性】**
 
 ```xml
 textAllCaps//是否全为大写
@@ -474,7 +470,7 @@ textAllCaps//是否全为大写
 
 ##### RadioButton
 
-**属性**
+**【属性】**
 
 ```
 android:orientation="vertical"
@@ -488,7 +484,7 @@ android:buttonTint="@color/..."
 
 ### EditText
 
-**输入类型**
+**【输入类型】**
 
 ```xml
 android:inputType=”none”
@@ -523,7 +519,7 @@ android:inputType=”date” 日期键盘
 android:inputType=”time” 时间键盘
 ```
 
-**大小设置**
+**【大小设置】**
 
 ①layout_width和layout_height
 
@@ -565,7 +561,7 @@ android:focusableInTouchMode="true"
 
 这样，就把EditText默认的行为截断了！ 
 
-**自定义样式**
+**【自定义样式】**
 
 1. 光标
 
@@ -581,7 +577,7 @@ android:gravity="left" //光标位于最开始位置
 
 android:gravity="center" //光标位于中间位置
 
-**监听器**
+**【监听器】**
 
 view.addTextChangedListener(new TextWatcher())
 
@@ -595,7 +591,7 @@ view.addTextChangedListener(new TextWatcher())
 
 解决：将edittext的高度设置为wrap_content
 
-**注意**
+**【注意】**
 
 点击屏幕其他地方让EditText失去焦点并隐藏输入法
 
@@ -629,7 +625,11 @@ https://blog.csdn.net/rongwenbin/article/details/51151244
 
 ## ViewGroup
 
-**常用方法**
+**【含义】**
+
+这是 Android 中所有布局控件的基类，它可以容纳其他视图，并决定它们的位置和大小。
+
+**【常用方法】**
 
 addView();
 
@@ -649,30 +649,56 @@ index我们可不可以随意定义呢？答案当然是不可以了。凡事都
 
 ②在RelativeLayout中的使用
 
-### GridLayout
-
-**属性**
-
-```xml
-android:rowCount//行数量
-android:columnCount//列数量
-android:layout_row//位于第几行
-android:layout_rowSpan//跨几行
-```
-
-**例子**
-
-![image-20220227210216010](Android_files\image-20220227210216010.png)
-
-### MapView
-
 ### AdapterView
+
+**【含义】**
+
+一个适配器视图控件的基类，它可以与适配器进行交互，并支持选项卡式导航，如 TabHost 和 ViewPager 等。
+
+#### AbsSpinner（abstract）
+
+**【含义】**
+
+AbsSpinner 是一个抽象类，提供了一些 Spinner 所需的共同行为，如子项的点击事件处理和数据绑定等。
+
+##### Spinner
+
+**【含义】**
+
+Spinner 是一个下拉列表控件，用于让用户从多个选项中选择一个。
+
+Spinner 继承了 AbsSpinner 的大部分功能，如支持适配器（Adapter）和选择事件监听器（OnItemSelectedListener）。
+
+【使用方法】
+
+具体：https://cloud.tencent.com/developer/article/1678861
+
+1. 静态使用：
+
+   - 在res文件夹下新建array.xml > 在其中添加选项字符串 > 在布局的spinner中添加
+
+   - ```
+     android:entries="@array/准备的字符串序列"
+     ```
+
+2. 动态使用：
+   - 创建一个Adapter，传入context（在Activity中传入this）和layout
+   - 调用adapter.add()添加项目
+   - 调用spinnerItems.setAdapter(adapter)将adapter绑定到控件
+3. 静态+动态使用：
+   - 创建一个Adapter，传入context（在Activity中传入this）、layout、静态字符串数组
+   - 调用adapter.setDropDownViewResource(layout)传入layout
+   - 调用spinnerItems.setAdapter(adapter)将adapter绑定到控件
 
 #### AbsListView
 
 ##### GridView
 
 ##### ListView
+
+**【含义】**
+
+ListView 是一个支持滚动列表的视图控件，它可以在有限的屏幕空间中显示大量数据，并支持滚动。ListView 继承了 AbsListView 的大部分功能，如支持滚动、分割线和选项菜单等。
 
 **适配器**
 
@@ -721,20 +747,20 @@ SimpleAdapter
         }
 ```
 
-**属性**
+**【属性】**
 
 ```xml
 Android:divider=”@null”;//去除分割线
 ```
 
-**方法**
+**【方法】**
 
 ```java
 //设置listview自动显示到最新数据
 listview,setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCORLL)
 ```
 
-**优化**
+**【优化】**
 
 在getView方法中
 
@@ -776,8 +802,10 @@ ListView的优化(以异步加载Bitmap优化为例)
 首先概括的说ListView优化分为三级缓存:
 
 内存缓存
+
 文件缓存
 网络读取
+
 简要概括就是在getView中，如果加载过一个图片，放入Map类型的一个MemoryCache中(示例代码使用的是Collections.synchronizedMap(new LinkedHashMap(10, 1.5f, true))来维护一个试用LRU的堆)。如果这里获取不到，根据View被Recycle之前放入的TAG中记录的uri从文件系统中读取文件缓存。如果本地都找不到，再去网络中异步加载。
 
 这里有几个注意的优化点：
@@ -790,11 +818,13 @@ Bitmap从网络下载下来最好先放到文件系统中缓存。这样一是�
 
 此外Github上也有仓库：https://github.com/geniusgithub/SyncLoaderBitmapDemo
 
-##### ExpandableListView
+###### ExpandableListView
 
-### ExpanableListView
+这是 Android 中所有布局控件的基类，它可以容纳其他视图，并决定它们的位置和大小。
 
-![image-20220317170955093](Android_files\image-20220317170955093.png)
+ExpandableListView 继承了 ListView 的大部分功能，如支持适配器（Adapter）和选择事件监听器（OnItemClickListener）。
+
+![image-20220317170955093](..\imgs\image-20220317170955093.png)
 
 **常用属性**
 
@@ -824,7 +854,22 @@ setOnGroupExpandListener();
     
 ```
 
-### 
+### GridLayout
+
+**【属性】**
+
+```xml
+android:rowCount//行数量
+android:columnCount//列数量
+android:layout_row//位于第几行
+android:layout_rowSpan//跨几行
+```
+
+**【例子】**
+
+![image-20220227210216010](Android_files\image-20220227210216010.png)
+
+### MapView
 
 ### RelativeLayout
 
@@ -834,7 +879,7 @@ setOnGroupExpandListener();
 
 #### TableLayout
 
-**属性**
+**【属性】**
 
 ```xml
 android:stretchColumns="1,2”//设置可伸展的列
@@ -842,7 +887,7 @@ android:shrinkColumns="1,2”//设置可收缩的列
 android:collapseColumns="0,1”//设置可隐藏的列
 ```
 
-**注意**
+**【注意】**
 
 如果直接在TableLayout中添加控件﹐那么控件将和父容器等宽如果想让控件出现在同一行﹐那么这些控件的外层一定要加一对在TableRow中的控件﹐宽度都是默认wrap_content
 
@@ -860,11 +905,7 @@ android:foregroundGravity//前景重力
 
 ScrollView的子元素只能有一个，可以是一个View（如ImageView、TextView等） 也可以是一个ViewGroup（如LinearLayout、RelativeLayout等），其子元素内部则不再限制，否则会报异常。
 
-**继承**
-
-Object > View > ViewGroup > FrameLayout > ScrollView & HorizontalScrollView
-
-**常用属性**
+**【常用属性】**
 
 ```xml
 android:fadingEdge="none"
@@ -888,7 +929,7 @@ android:fillViewport=“true"
 viewport。通俗来说，就是允许ScrollView去填充整个屏幕。比如ScrollView嵌套的子控件高度达不到屏幕高度时，虽然ScrollView高度设置了match_parent，也无法充满整个屏幕，需设置android:fillViewport=“true"使ScrollView填充整个页面，给ScrollView设置背景颜色就能体现。
 ```
 
-**常用方法**
+**【常用方法】**
 
 ```java
 //滑动开关控制
@@ -927,7 +968,7 @@ scrollView.post(new Runnable() {
 
 **Z轴的概念**
 
-![image-20220301163709013](Android_files/image-20220301163709013.png)
+![image-20220301163709013](../imgs/image-20220301163709013.png)
 
 Z属性可以通过elevation和translationZ进行修改
 Z＝ elevation＋translationZ
@@ -943,7 +984,7 @@ android:translationZ=""  设置该组件阴影在Z轴（垂直屏幕方向）上
 
 像FloatingActionButton就可以通过app:elevation=" "使用Z属性，CardView可以通过app:cardElevation=" " 来使用.
 
-**属性**
+**【属性】**
 
 ```xml
 app:cardCornerRadius=""//卡片边角半径
@@ -973,13 +1014,13 @@ https://www.jianshu.com/p/b105019028b6
 
 ### ConstraintLayout
 
-**添加依赖**
+**【添加依赖】**
 
 ```
 implementation 'com.android.support.constraint:constraint-layout:1.1.3'
 ```
 
-**常用属性**
+**【常用属性】**
 
 *layout_constraintLeft_toLeftOf*
 
@@ -1017,8 +1058,8 @@ implementation 'com.android.support.constraint:constraint-layout:1.1.3'
 
 文本对齐
 
-![3a05af62-4eb7-47ca-87c9-02c730adc7d6.jpg](Android_files\3a05af62-4eb7-47ca-87c9-02c730adc7d6.jpg)
-![8e827b5b-6143-45ee-bc71-22bd5691b91f.jpg](Android_files\8e827b5b-6143-45ee-bc71-22bd5691b91f.jpg)
+![3a05af62-4eb7-47ca-87c9-02c730adc7d6.jpg](../imgs/3a05af62-4eb7-47ca-87c9-02c730adc7d6.jpg)
+![8e827b5b-6143-45ee-bc71-22bd5691b91f.jpg](../imgs/8e827b5b-6143-45ee-bc71-22bd5691b91f.jpg)
 
 ```xml
     <TextView
@@ -1032,7 +1073,7 @@ implementation 'com.android.support.constraint:constraint-layout:1.1.3'
         app:layout_constraintBaseline_toBaselineOf="@+id/TextView1"/>
 ```
 
-![41b86e05-e941-4ce8-9c5b-77638ac6e3c4.jpg](Android_files\41b86e05-e941-4ce8-9c5b-77638ac6e3c4.jpg)
+![41b86e05-e941-4ce8-9c5b-77638ac6e3c4.jpg](../imgs/41b86e05-e941-4ce8-9c5b-77638ac6e3c4.jpg)
 
 *layout_constraintStart_toEndOf*
 
@@ -1073,7 +1114,7 @@ app:layout_constraintCircleAngle="120"(角度)
 app:layout_constraintCircleRadius="150dp"(距离)
 指的是TextView2的中心在TextView1的中心的120度,距离为150dp,效果如下:
 
-![ff964bd0-ae2d-4beb-9c5b-99d2ea3cd700.jpg](Android_files\ff964bd0-ae2d-4beb-9c5b-99d2ea3cd700.jpg)
+![ff964bd0-ae2d-4beb-9c5b-99d2ea3cd700.jpg](../imgs/ff964bd0-ae2d-4beb-9c5b-99d2ea3cd700.jpg)
 
 **margin**
 
@@ -1103,11 +1144,11 @@ margin只能大于等于0
 
 效果如下,TextView2在TextView1的右边,且没有边距。
 
-![50b82e0c-08be-440d-8adb-d62ee23a35ad.jpg](Android_files\50b82e0c-08be-440d-8adb-d62ee23a35ad.jpg)
+![50b82e0c-08be-440d-8adb-d62ee23a35ad.jpg](../imgs/50b82e0c-08be-440d-8adb-d62ee23a35ad.jpg)
 
 这个时候把TextView1的可见性设为gone,效果如下:
 
-![20d94efe-b2d2-42d2-9079-96eaa5cd6f43.jpg](Android_files\20d94efe-b2d2-42d2-9079-96eaa5cd6f43.jpg)
+![20d94efe-b2d2-42d2-9079-96eaa5cd6f43.jpg](../imgs/20d94efe-b2d2-42d2-9079-96eaa5cd6f43.jpg)
 
 TextView1消失后,TextView2有一个距离左边10dp的边距。
 
@@ -1147,7 +1188,7 @@ TextView1消失后,TextView2有一个距离左边10dp的边距。
        app:layout_constraintRight_toRightOf="parent" />
 ```
 
-![f5f7a4c9-f307-4850-8945-aee42f46f68c.jpg](Android_files\f5f7a4c9-f307-4850-8945-aee42f46f68c.jpg)
+![f5f7a4c9-f307-4850-8945-aee42f46f68c.jpg](../imgs/f5f7a4c9-f307-4850-8945-aee42f46f68c.jpg)
 
 ```xml
     <TextView
@@ -1158,7 +1199,7 @@ TextView1消失后,TextView2有一个距离左边10dp的边距。
        app:layout_constraintRight_toRightOf="parent" />
 ```
 
-![b8a620cf-a6bc-4004-a914-b81818ee5c5f.jpg](E:\Libraries\notes\se\android\Android_files\b8a620cf-a6bc-4004-a914-b81818ee5c5f.jpg)
+![b8a620cf-a6bc-4004-a914-b81818ee5c5f.jpg](../imgs/b8a620cf-a6bc-4004-a914-b81818ee5c5f.jpg)
 
 假如现在要实现水平偏移,给TextView1的layout_constraintHorizontal_bias赋一个范围为 0-1 的值,假如赋值为0,则TextView1在布局的最左侧,假如赋值为1,则TextView1在布局的最右侧,假如假如赋值为0.5,则水平居中,假如假如赋值为0.3,则更倾向于左侧。
 垂直偏移同理。
@@ -1195,7 +1236,7 @@ app:constrainedHeight="true"
         android:visibility="visible" />
 ```
 
-![d64d2826-fe99-49d9-8e0c-e9bf788033df.png](E:\Libraries\notes\se\android\Android_files\d64d2826-fe99-49d9-8e0c-e9bf788033df.png)
+![d64d2826-fe99-49d9-8e0c-e9bf788033df.png](../imgs/d64d2826-fe99-49d9-8e0c-e9bf788033df.png)
 
 ④宽高比
 
@@ -1209,7 +1250,7 @@ app:constrainedHeight="true"
         app:layout_constraintRight_toRightOf="parent" />
 ```
 
-![1b9e5b75-6c86-4871-8f8d-f5536f7f4d1b.jpg](Android_files\1b9e5b75-6c86-4871-8f8d-f5536f7f4d1b.jpg)
+![1b9e5b75-6c86-4871-8f8d-f5536f7f4d1b.jpg](../imgs/1b9e5b75-6c86-4871-8f8d-f5536f7f4d1b.jpg)
 
 在设置宽高比的值的时候,还可以在前面加W或H,分别指定宽度或高度限制。 例如:
 app:layout_constraintDimensionRatio="H,2:3"指的是 高:宽=2:3
@@ -1219,7 +1260,7 @@ app:layout_constraintDimensionRatio="W,2:3"指的是 宽:高=2:3
 
 如果两个或以上控件通过下图的方式约束在一起,就可以认为是他们是一条链(图为横向的链,纵向同理)。
 
-![ca342539-c176-45cf-8180-33433f10b102.jpg](Android_files\ca342539-c176-45cf-8180-33433f10b102.jpg)
+![ca342539-c176-45cf-8180-33433f10b102.jpg](../imgs/ca342539-c176-45cf-8180-33433f10b102.jpg)
 
 ```xml
   <TextView
@@ -1247,7 +1288,7 @@ app:layout_constraintDimensionRatio="W,2:3"指的是 宽:高=2:3
 
 3个TextView相互约束,两端两个TextView分别与parent约束,成为一条链,效果如下:
 
-![a39c0e6c-cc39-4712-bd40-f31b048bfde0.jpg](Android_files\a39c0e6c-cc39-4712-bd40-f31b048bfde0.jpg)
+![a39c0e6c-cc39-4712-bd40-f31b048bfde0.jpg](../imgs/a39c0e6c-cc39-4712-bd40-f31b048bfde0.jpg)
 
 一条链的第一个控件是这条链的链头,我们可以在链头中设置 layout_constraintHorizontal_chainStyle来改变整条链的样式。chains提供了3种样式,分别是:
 
@@ -1257,7 +1298,7 @@ app:layout_constraintDimensionRatio="W,2:3"指的是 宽:高=2:3
 
 如图所示:
 
-![0dd323f5-387a-4302-b456-4de600424e34.jpg](Android_files\0dd323f5-387a-4302-b456-4de600424e34.jpg)
+![0dd323f5-387a-4302-b456-4de600424e34.jpg](../imgs/0dd323f5-387a-4302-b456-4de600424e34.jpg)
 
 上面的例子创建了一个样式链,除了样式链外,还可以创建一个权重链。
 可以留意到上面所用到的3个TextView宽度都为wrap_content,如果我们把宽度都设为0dp,这个时候可以在每个TextView中设置横向权重layout_constraintHorizontal_weight(constraintVertical为纵向)来创建一个权重链,如下所示:
@@ -1291,7 +1332,7 @@ app:layout_constraintDimensionRatio="W,2:3"指的是 宽:高=2:3
 
 效果如下:
 
-![78713f17-19cf-4e6e-9e6e-657a24fb2a2a.jpg](Android_files\78713f17-19cf-4e6e-9e6e-657a24fb2a2a.jpg)
+![78713f17-19cf-4e6e-9e6e-657a24fb2a2a.jpg](../imgs/78713f17-19cf-4e6e-9e6e-657a24fb2a2a.jpg)
 
 **辅助工具**
 
@@ -1308,11 +1349,11 @@ app:layout_constraintDimensionRatio="W,2:3"指的是 宽:高=2:3
 
 ②Barrier
 
-![96abd7c2-a60f-44f2-b369-704b1590987b.jpg](Android_files\96abd7c2-a60f-44f2-b369-704b1590987b.jpg)
+![96abd7c2-a60f-44f2-b369-704b1590987b.jpg](../imgs/96abd7c2-a60f-44f2-b369-704b1590987b.jpg)
 
 假设有3个控件ABC,C在AB的右边,但是AB的宽是不固定的,这个时候C无论约束在A的右边或者B的右边都不对。当出现这种情况可以用Barrier来解决。Barrier可以在多个控件的一侧建立一个屏障,如下所示:
 
-![b95abb7a-2a04-4d84-83c2-ef87788ad909.jpg](Android_files\b95abb7a-2a04-4d84-83c2-ef87788ad909.jpg)
+![b95abb7a-2a04-4d84-83c2-ef87788ad909.jpg](../imgs/b95abb7a-2a04-4d84-83c2-ef87788ad909.jpg)
 
 这个时候C只要约束在Barrier的右边就可以了,代码如下:
 
@@ -1368,7 +1409,7 @@ Group可以把多个控件归为一组,方便隐藏或显示一组控件,举个�
        app:layout_constraintLeft_toRightOf="@id/TextView2" />
 ```
 
-![4608af4d-504d-420e-9c07-bd77d8ef482e.jpg](Android_files\4608af4d-504d-420e-9c07-bd77d8ef482e.jpg)
+![4608af4d-504d-420e-9c07-bd77d8ef482e.jpg](../imgs/4608af4d-504d-420e-9c07-bd77d8ef482e.jpg)
 
 现在有3个并排的TextView,用Group把TextView1和TextView3归为一组,再设置这组控件的可见性,如下所示:
 
@@ -1381,7 +1422,7 @@ Group可以把多个控件归为一组,方便隐藏或显示一组控件,举个�
        app:constraint_referenced_ids="TextView1,TextView3" />
 ```
 
-![b47f408d-3cd1-491b-80c2-fd3cccdebed5.png](Android_files\b47f408d-3cd1-491b-80c2-fd3cccdebed5.png)
+![b47f408d-3cd1-491b-80c2-fd3cccdebed5.png](../imgs/b47f408d-3cd1-491b-80c2-fd3cccdebed5.png)
 
 **Placeholder**
 
@@ -1410,7 +1451,7 @@ Placeholder指的是占位符。在Placeholder中可使用setContent()设置另�
 
 新建一个Placeholder约束在屏幕的左上角,新建一个TextView约束在屏幕的右上角,在Placeholder中设置 app:content="@+id/textview",这时TextView会跑到屏幕的左上角。效果如下:
 
-![732f2ec3-eeb0-4920-9b99-fa8d424e0ff4.jpg](Android_files\732f2ec3-eeb0-4920-9b99-fa8d424e0ff4.jpg)
+![732f2ec3-eeb0-4920-9b99-fa8d424e0ff4.jpg](../imgs/732f2ec3-eeb0-4920-9b99-fa8d424e0ff4.jpg)
 
 **Guideline**
 
@@ -1457,33 +1498,33 @@ guideline1为水平辅助线,开始位置是距离顶部50dp,guideline2位垂直
 
 step1 定义ViewPager对象和视图id数组
 
-![image-20220302110821450](Android_files\image-20220302110821450.png)
+![image-20220302110821450](../imgs/image-20220302110821450.png)
 
 step2 把视图添加到视图List中
 
-![image-20220302110838895](Android_files\image-20220302110838895.png)
+![image-20220302110838895](../imgs/image-20220302110838895.png)
 
 step3 添加适配器PagerAdapter
 
-![image-20220302110857439](Android_files\image-20220302110857439.png)
+![image-20220302110857439](../imgs/image-20220302110857439.png)
 
-![image-20220302110909238](Android_files\image-20220302110909238.png)
+![image-20220302110909238](../imgs/image-20220302110909238.png)
 
 或者FragmentPagerAdapter
 
-![image-20220302110930646](Android_files\image-20220302110930646.png)
+![image-20220302110930646](../imgs/image-20220302110930646.png)
 
-![image-20220302110941927](Android_files\image-20220302110941927.png)
+![image-20220302110941927](../imgs/image-20220302110941927.png)
 
 Fragment中
 
-![image-20220302110958673](Android_files\image-20220302110958673.png)
+![image-20220302110958673](../imgs/image-20220302110958673.png)
 
 **监听器**
 
 ①视图转换监听器
 
-![image-20220302111029409](Android_files\image-20220302111029409.png)
+![image-20220302111029409](../imgs/image-20220302111029409.png)
 
 ### RecyclerView
 
@@ -1496,7 +1537,7 @@ implementation 'com.android.support:recyclerview-V7:28.0.0'//版本需要和appc
 
 忽略警告的操作：
 
-![image-20220408172536624](G:/notes/se/android/Android_files/image-20220408172536624.png)
+![image-20220408172536624](../imgs/image-20220408172536624.png)
 
 **布局方式**
 

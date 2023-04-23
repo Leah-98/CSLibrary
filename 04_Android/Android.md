@@ -192,312 +192,6 @@ Android四大组件其实就是在AndroidManifest.xml里的在application下记�
 
 android:exported属性代表这个组件能否被其他应用调用，true时可以，false不行；当有intent-filter时默认为true，没有时默认为false
 
-# 视图
-
-## 应用栏
-
-toolbar的组成如下:
-
-![image-20220308110950113](G:/notes/se/android/Android_files/image-20220308110950113.png)
-
-①为Toolbar整体，继承ViewGroup，是个容器控件，自己包含了①—⑥，而⑦是Activity中引入的；
-
-②为导航按钮，类型为ImageButton，可设置点击事件，用于返回上个页面或者滑出侧滑菜单；
-
-xml属性：app:navigationIcon="@drawable/xxx"//引入一张图标；
-
-③为Logo展示图，类型为ImageView，不响应事件，仅仅作为展示。
-
-xml属性：app:logo="@drawable/xxx"//引入一张图标；
-
-④为主标题，类型为TextView；xml属性：app:title
-
-⑤为副标题，类型为TextView；xml属性：app:subtitle
-
-⑥为普通子View，标题和菜单之间是留给我们添加子View的区域；
-
-⑦为菜单ActionMenuView，负责管理选项菜单，菜单本身可以点击。
-
-注意：Toolbar控件在布局文件中可以2个图标，3段文字，只有第一个图标可设置点击事件，标题栏的这个位置最常用来放置返回按钮图标。
-
-## Menu
-
-### 历史
-
-3.0以前：在Android3.0，当用户按“菜单”按钮时，选项菜单的内容会出现在屏幕底部，如图1所示,可包含多达6个菜单项，超出部分则以“更多”来显示。
-
-![image-20220302095554245](Android_files\image-20220302095554245.png)
-
-3.0以后：在Android3.0及更高版本的系统中，选项菜单中的项目将出现在操作栏中，用户可以使用操作栏右侧的图标或者按设备的菜单键显示操作溢出菜单。
-
-![image-20220302095630664](Android_files\image-20220302095630664.png)
-
-### 选项菜单（OptionMenu）
-
-#### 使用
-
-step1 新建菜单资源文件
-
-![image-20220302095701112](Android_files\image-20220302095701112.png)
-
-在Design模式下编辑
-
-![image-20220302095735376](Android_files\image-20220302095735376.png)
-
-在Text模式下编辑
-
-![image-20220302095757016](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20220302095757016.png)
-
-step2 在相应的Activity类下创建OptionMenu
-
-![image-20220302095859000](Android_files\image-20220302095859000.png)
-
-#### 属性
-
-##### showAsAction
-
-always表示菜单内容显示在导航栏上
-
-![image-20220302100013937](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20220302100013937.png)
-
-当有图标时默认只显示图标
-
-![image-20220302100118329](Android_files\image-20220302100118329.png)
-
-withText表示不仅显示图标还显示文字
-
-![image-20220302100155105](Android_files\image-20220302100155105.png)
-
-never表示不显示
-
-ifRoom表示如果有足够的空间再显示
-
-#### 点击响应
-
-![image-20220302100248624](Android_files\image-20220302100248624.png)
-
-#### 注意
-
-最多允许两级菜单
-
-### 上下文菜单（ContextMenu）
-
-使用：长按某个 view不放，就会在屏幕中间弹出ContextMenu
-
-#### 使用
-
-step1 在Activity中注册
-
-![image-20220302100430780](Android_files\image-20220302100430780.png)
-
-step2 在Activity中重写onCreateContextMenu方法
-
-![image-20220302100507192](Android_files\image-20220302100507192.png)
-
-step3 重新onContextItemSelected方法进行菜单项的操作
-
-![image-20220302100544312](Android_files\image-20220302100544312.png)
-
-step4 为按钮设置上下文操作模式
-
-①实现ActionMode CallBack
-②在view的长按事件中去启动上下文操作模式
-
-![image-20220302100652889](Android_files\image-20220302100652889.png)
-
-![image-20220302100738480](Android_files\image-20220302100738480.png)'![image-20220302100753240](D:\notes\codes\android\Android_files\image-20220302100753240.png)
-
-![image-20220302100806920](Android_files\image-20220302100806920.png)
-
-![image-20220302100821008](Android_files\image-20220302100821008.png)
-
-![image-20220302100832400](Android_files\image-20220302100832400.png)
-
-### 弹出菜单（PopupMenu）
-
-使用：一个模态形势展示的弹出风格的菜单，绑定在某个View上，一般出现在被绑定的View的下方
-
-#### 使用
-
-![image-20220302100929032](Android_files\image-20220302100929032.png)
-
-![image-20220302100940504](Android_files\image-20220302100940504.png)
-
-![image-20220302100950311](Android_files\image-20220302100950311.png)
-
-### Menu创建方式的优缺点
-
-option1 通过xml定义：菜单一般在res中创建menu目录放置资源文件
-
-![image-20220302101041759](Android_files\image-20220302101041759.png)
-
-清晰的菜单结构
-
-将菜单内容与应用的逻辑代码分离
-
-资源适配更容易
-
-option2 通过java定义
-
-![image-20220302101142481](Android_files\image-20220302101142481.png)
-
-![image-20220302101150072](Android_files\image-20220302101150072.png)
-
-### 处理Menu显示问题
-
-![image-20220302101249560](Android_files\image-20220302101249560.png)
-
-- onCreateOptionsMenu()必须返回true，否则菜单不显示
-- onOptionsItemSelected()方法返回true，告诉系统此处的操作已经完成；同时在switch中添加default实现父类功能避免有些操作未完成
-
-![image-20220302101319360](Android_files\image-20220302101319360.png)
-
-## Dialog对话框
-
-### 提示对话框(AlertDialog)
-
-method1 
-
-![image-20220302104833712](Android_files\image-20220302104833712.png)
-
-method2(相对麻烦)
-
-![image-20220302104851951](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20220302104851951.png)
-
-### PopupWindow
-
-step1 创建PopupWindow对象实例
-
-![image-20220302105111831](Android_files\image-20220302105111831.png)
-
-step2 设置背景、注册事件监听器和添加动画
-
-![image-20220302105130454](Android_files\image-20220302105130454.png)
-
-![image-20220302105142342](Android_files\image-20220302105142342.png)
-
-![image-20220302105154311](Android_files\image-20220302105154311.png)
-
-![image-20220302105225495](Android_files\image-20220302105225495.png)
-
-![image-20220302105236015](Android_files\image-20220302105236015.png)
-
-step3 显示PopupWindow
-
-![image-20220302105257774](Android_files\image-20220302105257774.png)
-
-
-
-### 自定义对话框
-
-step1 设置自定义对话框样式-->dialog_layout.xml
-
-step2 设置style（去标题栏，去背景）
-
-![image-20220302104940023](Android_files\image-20220302104940023.png)
-
-step3 将第一步的布局应用到当前定义的对话框
-
-![image-20220302105007622](Android_files\image-20220302105007622.png)
-
-step4 实例化对话框
-
-![image-20220302105030279](Android_files\image-20220302105030279.png)
-
-## 系统控件
-
-### 键盘
-
-tips1 点击其他地方隐藏键盘
-
-```java
-`@Override
-public boolean dispatchTouchEvent*(*MotionEvent ev*) {*    if *(*ev.getAction*()* == MotionEvent.*ACTION_DOWN) {*        View v = getCurrentFocus*()*;        if *(*isShouldHideKeyboard*(*v, ev*)) {*            hideKeyboard*(*v.getWindowToken*())*;        *}    }*    return super.dispatchTouchEvent*(*ev*)*;*}/** * 根据EditText所在坐标和用户点击的坐标相对比，     * 来判断是否隐藏键盘，因为当用户点击EditText时则不能隐藏 */*private boolean isShouldHideKeyboard*(*View v, MotionEvent event*) {*    if *(*v != null && *(*v instanceof EditText*)) {*        int*[]* l = *{*0, 0*}*;        v.getLocationInWindow*(*l*)*;        int left = l*[*0*]*, top = l*[*1*]*, bottom = top + v.getHeight*()*, right = left + v.getWidth*()*;        if *(*event.getX*()* > left && event.getX*()* < right && event.getY*()* > top && event.getY*()* < bottom*) {*                // 点击EditText的事件，忽略它。            return false;        *}* else *{*            return true;        *}    }*    // 如果焦点不是EditText则忽略，这个发生在视图刚绘制完，第一个焦点不在EditText上，和用户用轨迹球选择其他的焦点    return false;*}/** * 获取InputMethodManager，隐藏软键盘 */*private void hideKeyboard*(*IBinder token*) {*    if *(*token != null*) {*        InputMethodManager im = *(*InputMethodManager*)* getSystemService*(*Context.*INPUT_METHOD_SERVICE)*;        im.hideSoftInputFromWindow*(*token, InputMethodManager.*HIDE_NOT_ALWAYS)*;    *}}*`
-```
-
-
-
-## 屏幕适配
-
-### 基本概念
-
-#### 屏幕尺寸
-
-屏幕尺寸指屏幕的对角线的长度，单位是英寸，1英寸=2.54厘米常见尺寸:2.4，2.8，3.5，3.7，4.2，5.0，5.5，6.0等
-
-![image-20220301204643247](Android_files\image-20220301204643247.png)
-
-#### 屏幕分辨率
-
-屏幕分辨率是指在横纵向上的像素点数，单位是px,1px=1个像素点，一般以纵向像素\*横向像素，如:1960\*1080
-
-#### 屏幕像素密度
-
-屏幕像素密度是指每英寸上的像素点数，单位是dpi，即“dot per inch”的缩写。屏幕像素密度与屏幕尺寸和屏幕分辨率有关。
-
-![image-20220301205219484](Android_files\image-20220301205219484.png)
-
-#### 像素单位
-
-- px: pixel的缩写，像素，1px代表屏幕上一个物理的像素点
-
-- dip、dp:都是Density Independent Pixels的缩写，即密度无关像素
-- sp : scaled pixels，与dp类似，用于设置字体大小
-
-#### dp与px的换算
-
-在屏幕像素密度为160dpi的情况下，1dp=1px。
-
-假如:320dpi,1dp=2px
-
-1dp=(像素密度/160dpi)\*1px
-
-pxValue=(像素密度/160dpi)\*dpValue
-
-density:(像素密度/160dpi)
-
-#### ldpi、mdpi、hdpi、xdpi的区别
-
-| 名称    | 像素密度范围  | 比例 |
-| ------- | ------------- | ---- |
-| mdpi    | 120dpi~160dpi | 2    |
-| hdpi    | 160dpi~240dpi | 3    |
-| xhdpi   | 240dpi~320dpi | 4    |
-| xxhdpi  | 320dpi~480dpi | 6    |
-| xxxhdpi | 480dpi~640dpi | 8    |
-
-### 布局适配
-
-1. 禁用绝对布局（横纵坐标点确定布局位置）
-2. 少用px
-3. 使用wrap_content、match_parent、layout_weight
-4. 重建布局文件
-
-### 图片适配
-
-1. 提供不同分辨率的备用位图
-2. 使用自动拉伸图（.9图）
-
-![image-20220301212037984](Android_files\image-20220301212037984.png)
-
-视图上方鼠标横向拉动：设置横向拉伸范围
-
-![image-20220301212053320](Android_files\image-20220301212053320.png)
-
-视图左部鼠标纵向移动：设置纵向拉伸范围
-
-![image-20220301212232448](Android_files\image-20220301212232448.png)
-
-视图右边鼠标纵向移动：设置文本显示的纵向范围
-
-![image-20220301212308986](Android_files\image-20220301212308986.png)
-
-视图下方鼠标横向移动，设置文本显示的横向范围
-
-https://www.jianshu.com/p/3a7c101780a0
-
-## 
-
 # 本地数据存储
 
 ## SP
@@ -516,6 +210,40 @@ https://www.jianshu.com/p/3a7c101780a0
 - MODE_PRIVATE:私有方式存储,其他应用无法访问
 - MODE_WORLD_READABLE:可被其他应用读取
 - MODE_WORLD_WRITEABLE:可被其他应用写入
+
+在安卓中，您可以使用SharedPreferences（以下简称为sp）来存储和获取应用程序的数据。以下是获取和设置sp中的值的示例代码：
+
+获取sp中的值：
+
+```
+javaCopy code// 获取SharedPreferences对象
+SharedPreferences sharedPreferences = getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+
+// 从SharedPreferences中获取一个值
+String value = sharedPreferences.getString("key", defaultValue);
+```
+
+在这里，"myPrefs"是您想要使用的SharedPreferences文件的名称，"key"是要获取的值的键，defaultValue是如果找不到该键时返回的默认值。
+
+设置sp中的值：
+
+```
+javaCopy code// 获取SharedPreferences对象
+SharedPreferences sharedPreferences = getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+
+// 使用SharedPreferences.Editor对象来编辑SharedPreferences
+SharedPreferences.Editor editor = sharedPreferences.edit();
+
+// 将值存储到SharedPreferences中
+editor.putString("key", value);
+
+// 应用更改
+editor.apply();
+```
+
+在这里，您首先获取了SharedPreferences对象，然后创建了一个SharedPreferences.Editor对象来编辑SharedPreferences。接下来，您可以使用putString()方法将键值对存储到SharedPreferences中。最后，调用apply()方法来应用更改。
+
+请注意，"key"是您要存储的值的键，value是要存储的值。此外，要确保在更改完SharedPreferences之后调用apply()方法，以确保更改得到应用。
 
 ## 文件
 
