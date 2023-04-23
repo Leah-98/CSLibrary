@@ -461,3 +461,106 @@ intent.addCategory("wangshiming.intent.category")代码中的addCategory并不�
 ## getIntent()
 
 getIntent ()方法在Activity中使用，**获得启动当前活动时的Intent内容**。. 使用的时候要注意， 如果想每次启动Activity时使用此方法获得通过Intent传输的数据，要注意使用的启动模式。. 因为此时获得的Intent数据是在初始创建Activity时的赋值，如果使用standard启动模式则没有什么问题，但如果使用的是singleTask、singleTop等模式，若任务栈中（singleTask）或顶部（singleTop）存在该Activity，下次启动时则不会重新创建Activity（具体出入栈机制或四种启动模式详情请自行了解），所以此时获得的Intent仍为创建时的缓存数据。.
+
+# 隐式启动问题及其变动
+
+## Android5.0之前
+
+例子：使用隐式启动意图打开浏览器并显示网页，可以使用以下代码：
+
+```java
+javaCopy codeIntent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.example.com"));
+startActivity(intent);
+```
+
+## Android5.0之后
+
+在安卓5.0及其以上版本中，隐式启动意图的方式和之前的版本略有不同，主要表现在以下几个方面：
+
+1. 显式设置要启动的组件
+
+在安卓5.0及其以上版本中，使用隐式启动意图时，需要显式地指定要启动的组件，即需要为意图设置一个明确的组件，这可以确保您的应用程序只能启动您指定的组件。
+
+例如，要使用隐式意图启动名为`com.example.activity.MainActivity`的活动，可以使用以下代码：
+
+```java
+javaCopy codeIntent intent = new Intent();
+intent.setComponent(new ComponentName("com.example", "com.example.activity.MainActivity"));
+startActivity(intent);
+```
+
+这里的`setComponent()`方法为隐式意图设置了一个明确的组件，即名为`com.example.activity.MainActivity`的活动组件。
+
+2. 设置IntentFilter
+
+在安卓5.0及其以上版本中，要使用隐式意图启动组件，必须在要启动的组件中设置`IntentFilter`。`IntentFilter`指定了可以处理特定操作的组件，可以为操作设置多个过滤器，并且可以在`IntentFilter`中指定要处理的数据类型。
+
+例如，要启动能够处理`ACTION_VIEW`操作的浏览器活动，可以使用以下代码：
+
+```xml
+<activity android:name=".MainActivity">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:scheme="http" />
+        <data android:scheme="https" />
+    </intent-filter>
+</activity>
+```
+
+这里的`intent-filter`元素指定了能够处理`ACTION_VIEW`操作和具有`http`和`https`协议的数据类型的活动。通过设置`IntentFilter`，可以确保组件只会被正确的意图启动，并且可以在应用程序中进行正确的操作。
+
+总之，隐式启动意图在安卓5.0及其以上版本中仍然可用，但需要<u>显式指定要启动的组件，并为组件设置适当的`IntentFilter`</u>。这种方式可以提高应用程序的安全性和稳定性。
+
+### Service不再可以被隐式启动，需要转换为显示启动
+
+转换为显示启动：设置Action和packageName
+
+```java
+final Intent serviceIntent=new Intent(); serviceIntent.setAction("com.android.ForegroundService");
+serviceIntent.setPackage(getPackageName());//设置应用的包名
+startService(serviceIntent);
+```
+
+## Android6.0之后
+
+在安卓6.0及其以上版本中，与安卓5.0相比，隐式启动意图的方式基本保持不变。但是，安卓6.0引入了一些新的权限控制机制，需要在隐式启动意图中包含一些新的属性。
+
+1. 设置Package
+
+在安卓6.0及其以上版本中，如果您的应用程序需要使用隐式意图启动其他应用程序的组件，您必须使用`setPackage()`方法显式地指定目标应用程序的包名。这可以确保您的应用程序只能启动您指定的应用程序，而不是启动任何具有相同包名的恶意应用程序。
+
+例如，要使用隐式意图启动名为`com.example.activity.MainActivity`的活动，并确保它属于`com.example`应用程序，可以使用以下代码：
+
+```javascript
+javaCopy codeIntent intent = new Intent();
+intent.setComponent(new ComponentName("com.example", "com.example.activity.MainActivity"));
+intent.setPackage("com.example");
+startActivity(intent);
+```
+
+这里的`setPackage()`方法为隐式意图设置了目标应用程序的包名，即`com.example`。
+
+1. 请求权限
+
+在安卓6.0及其以上版本中，访问某些敏感数据或执行某些敏感操作需要请求权限。如果您的应用程序需要使用隐式意图执行这些操作，则必须在`AndroidManifest.xml`文件中声明相应的权限，并在运行时请求该权限。如果您的应用程序没有请求所需的权限，则可能会发生安全问题或运行时错误。
+
+例如，要使用隐式意图访问设备上的照片，您需要在`AndroidManifest.xml`文件中声明`READ_EXTERNAL_STORAGE`权限，并在运行时请求该权限，可以使用以下代码：
+
+```java
+javaCopy codeif (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
+}
+```
+
+这里的`checkSelfPermission()`方法用于检查是否已授予该权限，`requestPermissions()`方法用于请求该权限。如果用户授予了该权限，则您的应用程序可以使用隐式意图访问设备上的照片。
+
+总之，在安卓6.0及其以上版本中，与安卓5.0相比，隐式启动意图的方式基本保持不变，但是需要在隐式启动意图中包含一些新的属性，例如`setPackage()`和请求权限等。这些属性可以提高应用程序的安全性和稳定性。
+
+## Android13.0之后
+
+Intent 过滤器会屏蔽不匹配的 intent:
+
+当您的应用向以 Android 13 或更高版本为目标平台的其他应用的导出组件发送 intent 时，仅当该 intent 与接收应用中的 <intent-filter> 元素匹配时，系统才会传送该 intent。不匹配的 intent 会被屏蔽 . 因此, 使用隐式intent的地方要注意.
+
+注意：每一个通过 startActivity() 方法发出的隐式 Intent 都至少有一个 category，就是 “android.intent.category.DEFAULT”，所以只要是想接收一个隐式 Intent 的 Activity 都应该包括 “android.intent.category.DEFAULT” category，不然将导致 Intent 匹配失败。
