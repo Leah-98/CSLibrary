@@ -124,3 +124,24 @@ adb shell pm list packages
 adb shell dumpsys activity activities
 ```
 
+用adb命令显示apk的版本
+
+```
+(Linux)
+adb shell dumpsys package <package_name> | grep versionName
+(Windows)
+adb shell dumpsys package <package_name> | findstr versionName
+```
+
+
+
+给apk文件重新签名
+
+一旦有了签名文件和APK文件，就可以使用Java自带的jarsigner工具对APK文件进行签名。例如，可以执行以下命令：
+
+```
+Copy code
+jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore mykeystore.keystore myapp.apk myalias
+```
+
+其中，mykeystore.keystore是签名文件的路径，myapp.apk是需要签名的APK文件的路径，myalias是签名文件中的别名。执行这个命令后，会提示输入签名文件的密码。
