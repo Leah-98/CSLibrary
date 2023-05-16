@@ -871,9 +871,24 @@ android:layout_rowSpan//跨几行
 
 ### MapView
 
-### RelativeLayout
-
 ### LinearLayout
+
+【排列方式】
+
+分为vertical和horizontal两种，当控件有2个及2个以上式必须设置排列方式
+
+【摆放位置】
+
+- **gravity**，当前控件是父控件，属性针对父控件内部的子控件的拜访。
+  - 如果是容器，则针对的是容器里面子view的摆放；如果是控件，则针对的是控件里面内容的摆放。
+- **layout_gravity**，当前控件是子控件，属性针对当前控件在父控件里面的摆放位置。
+  - 不过需要注意的一点是父控件设置的gravity的级别要低于子控件设置的layout_gravity。
+
+【权重】
+
+- **layout_weight**，按比例来分配控件占用父控件的大小。
+
+### RelativeLayout
 
 #### RadioGroup
 
