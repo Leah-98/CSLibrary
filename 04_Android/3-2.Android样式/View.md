@@ -1,5 +1,9 @@
 # View
 
+【通用属性】
+
+![img](E:\personal\CSLibrary\04_Android\imgs\watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xpdWRzbA==,size_16,color_FFFFFF,t_70)
+
 **LayoutInflater**
 
 LayoutInflater inflate() 方法用于动态加载布局，将 XML 布局文件实例化为其对应的 View 对象。
@@ -890,6 +894,44 @@ android:layout_rowSpan//跨几行
 
 ### RelativeLayout
 
+【常用属性】
+
+```
+1.与兄弟控件的关系——方向位置
+android:layout_above="@id/xxx"  --将控件置于给定ID控件之上
+android:layout_below="@id/xxx"  --将控件置于给定ID控件之下
+android:layout_toLeftOf="@id/xxx"  --将控件的右边缘和给定ID控件的左边缘对齐（将控件置于给定ID控件之左）
+android:layout_toRightOf="@id/xxx"  --将控件的左边缘和给定ID控件的右边缘对齐（将控件置于给定ID控件之右）
+
+2.与兄弟控件的关系——方向对齐
+android:layout_alignLeft="@id/xxx"  --将控件的左边缘和给定ID控件的左边缘对齐
+android:layout_alignTop="@id/xxx"  --将控件的上边缘和给定ID控件的上边缘对齐
+android:layout_alignRight="@id/xxx"  --将控件的右边缘和给定ID控件的右边缘对齐
+android:layout_alignBottom="@id/xxx"  --将控件的底边缘和给定ID控件的底边缘对齐
+
+3.与父控件的关系——边缘对齐
+android:layout_alignParentLeft="true"  --将控件的左边缘和父控件的左边缘对齐
+android:layout_alignParentTop="true"  --将控件的上边缘和父控件的上边缘对齐
+android:layout_alignParentRight="true"  --将控件的右边缘和父控件的右边缘对齐
+android:layout_alignParentBottom="true" --将控件的底边缘和父控件的底边缘对齐
+
+4.与父控件的关系——居中对齐
+android:layout_centerInParent="true"  --将控件置于父控件的中心位置
+android:layout_centerHorizontal="true"  --将控件置于水平方向的中心位置
+android:layout_centerVertical="true"  --将控件置于垂直方向的中心位置
+
+5.相对于基准线位置：
+android:layout_alignBaseline=”@id/xxx” --以两控件字体下方的线对齐(针对英文)
+
+6、头部尾部对齐（版本4.2以上的新属性）
+android:layout_alignStart=”@id/xxx”  --将控件对齐给定ID控件的头部
+android:layout_alignEnd=”@id/xxx”  --将控件对齐给定ID控件的尾部
+android:layout_alignParentStart=true  --将控件对齐到父控件的头部
+android:layout_alignParentEnd=true  --将控件对齐到父控件的尾部
+```
+
+
+
 #### RadioGroup
 
 #### TableLayout
@@ -1037,41 +1079,30 @@ implementation 'com.android.support.constraint:constraint-layout:1.1.3'
 
 **【常用属性】**
 
-*layout_constraintLeft_toLeftOf*
+```
+layout_constraintLeft_toLeftOf		//此控件的左边与另一个控件的左边对齐
+layout_constraintLeft_toRightOf		//此控件的左边与另一个控件的右边对齐
+layout_constraintRight_toLeftOf		//此控件的右边与另一个控件的左边对齐
+layout_constraintRight_toRightOf	//此控件的右边与另一个控件的右边对齐
 
-此控件的左边与另一个控件的左边对齐
+layout_constraintTop_toTopOf		//此控件的顶部与另一个控件的顶部对齐
+layout_constraintTop_toBottomOf		//此控件的顶部与另一个控件的底部对齐
+layout_constraintBottom_toTopOf		//此控件的底部与另一个控件的顶部对齐
+layout_constraintBottom_toBottomOf	//此控件的底部与另一个控件的底部对齐
 
-*layout_constraintLeft_toRightOf*
+layout_constraintStart_toEndOf		//此控件的开始与另一控件的结束对齐
+layout_constraintStart_toStartOf	//此控件的开始与另一控件的开始对齐
+layout_constraintEnd_toStartOf		//此控件的结束与另一控件的开始对齐
+layout_constraintEnd_toEndOf		//此控件的结束与另一控件的结束对齐
+```
 
-此控件的左边与另一个控件的右边对齐
+**文本对齐**
 
-*layout_constraintRight_toLeftOf*
+```
+layout_constraintBaseline_toBaselineOf //此控件的基本线与另一个控件的基本线对齐(见下)
+```
 
-此控件的右边与另一个控件的左边对齐
 
-*layout_constraintRight_toRightOf*
-
-此控件的右边与另一个控件的右边对齐
-
-*layout_constraintTop_toTopOf* 
-
-此控件的顶部与另一个控件的顶部对齐
-
-*layout_constraintTop_toBottomOf* 
-
-此控件的顶部与另一个控件的底部对齐
-
-*layout_constraintBottom_toTopOf* 
-
-此控件的底部与另一个控件的顶部对齐
-
-*layout_constraintBottom_toBottomOf* 
-
-此控件的底部与另一个控件的底部对齐
-
-*layout_constraintBaseline_toBaselineOf* 
-
-文本对齐
 
 ![3a05af62-4eb7-47ca-87c9-02c730adc7d6.jpg](../imgs/3a05af62-4eb7-47ca-87c9-02c730adc7d6.jpg)
 ![8e827b5b-6143-45ee-bc71-22bd5691b91f.jpg](../imgs/8e827b5b-6143-45ee-bc71-22bd5691b91f.jpg)
@@ -1090,21 +1121,7 @@ implementation 'com.android.support.constraint:constraint-layout:1.1.3'
 
 ![41b86e05-e941-4ce8-9c5b-77638ac6e3c4.jpg](../imgs/41b86e05-e941-4ce8-9c5b-77638ac6e3c4.jpg)
 
-*layout_constraintStart_toEndOf*
 
-此控件的开始与另一控件的结束对齐
-
-*layout_constraintStart_toStartOf*
-
-此控件的开始与另一控件的开始对齐
-
-*layout_constraintEnd_toStartOf*
-
-此控件的结束与另一控件的开始对齐
-
-*layout_constraintEnd_toEndOf* 
-
-此控件的结束与另一控件的结束对齐
 
 **角度定位**
 
@@ -1389,7 +1406,7 @@ app:layout_constraintDimensionRatio="W,2:3"指的是 宽:高=2:3
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
        app:barrierDirection="right"
-       app:constraint_referenced_ids="TextView1,TextView2" />
+       app:constraint_referenced_ids="TextView1,TextView2"//采用1或2的突出边界 />
 
     <TextView
        android:id="@+id/TextView3"
@@ -1499,7 +1516,7 @@ Guildline的主要属性:
 
 guideline1为水平辅助线,开始位置是距离顶部50dp,guideline2位垂直辅助线,开始位置为屏幕宽的0.5(中点位置),效果如下:
 
-![b3d45a85-8b99-47e5-98a7-cb3e1de90974.jpg](Android_files\b3d45a85-8b99-47e5-98a7-cb3e1de90974.jpg)
+![b3d45a85-8b99-47e5-98a7-cb3e1de90974.jpg](../imgs/b3d45a85-8b99-47e5-98a7-cb3e1de90974.jpg)
 
 
 
