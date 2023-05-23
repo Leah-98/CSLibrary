@@ -4,31 +4,31 @@
 
 # 生命周期
 
-![image-20220302110412972](G:/notes/se/android/Android_files/image-20220302110412972.png)
+![image-20220302110412972](../imgs/image-20220302110412972.png)
 
 **状态解析**
 
-- onAttach()：Fragment和Activity相关联时调用。可以通过该方法获取Activity引用，还可以通过getArguments()获取参数。
+- **onAttach()**：Fragment和Activity相关联时调用。可以通过该方法获取Activity引用，还可以通过getArguments()获取参数。
 
-- onCreate()：Fragment被创建时调用。
+- **onCreate()**：Fragment被创建时调用。
 
-- onCreateView()：创建Fragment的布局。
+- **onCreateView()**：创建Fragment的布局。
 
-- onActivityCreated()：当Activity完成onCreate()时调用。
+- **onActivityCreated()**：当Activity完成onCreate()时调用。
 
-- onStart()：当Fragment可见时调用。
+- **onStart()**：当Fragment可见时调用。
 
-- onResume()：当Fragment可见且可交互时调用。
+- **onResume()**：当Fragment可见且可交互时调用。
 
-- onPause()：当Fragment不可交互但可见时调用。
+- **onPause()**：当Fragment不可交互但可见时调用。
 
-- onStop()：当Fragment不可见时调用。
+- **onStop()**：当Fragment不可见时调用。
 
-- onDestroyView()：当Fragment的UI从视图结构中移除时调用。
+- **onDestroyView()**：当Fragment的UI从视图结构中移除时调用。
 
-- onDestroy()：销毁Fragment时调用。
+- **onDestroy()**：销毁Fragment时调用。
 
-- onDetach()：当Fragment和Activity解除关联时调用
+- **onDetach()**：当Fragment和Activity解除关联时调用
 
 **场景解析**
 
@@ -53,7 +53,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="vertical" 		
     tools:context="com.example.wcystart.wcystart.FragmentActivity">
  
     <fragment
@@ -75,59 +75,80 @@
 
 ## method2 动态加载
 
-**FragmentManager**：用来管理Activity中的fragment,app包中使用getFragmentManager()   v4包中getSupportFragmentManager
+**FragmentManager**：用来管理Activity中的fragment
+
+使用：
+
+- app包中使用getFragmentManager() 
+- v4包中getSupportFragmentManager()
 
 **FragmentTransaction**：事务,用来添加，移除，替换fragment
 
+使用：
+
+```java
 FragmentTransaction transaction = fm.benginTransatcion();//开启一个事务
 
-transaction.add()：往Activity中添加一个Fragment
+transaction.add();//往Activity中添加一个Fragment
 
-transaction.remove()：从Activity中移除一个Fragment，如果被移除的Fragment没有添加到回退栈，这个Fragment实例将会被销毁。
+transaction.remove();//从Activity中移除一个Fragment，如果被移除的Fragment没有添加到回退栈，这个Fragment实例将会被销毁。
 
-transaction.replace()：使用另一个Fragment替换当前的，实际上就是remove()然后add()的合体。
+transaction.replace();//使用另一个Fragment替换当前的，实际上就是remove()然后add()的合体。
 
-transaction.hide()：隐藏当前的Fragment，仅仅是设为不可见，并不会销毁。
+transaction.hide();//隐藏当前的Fragment，仅仅是设为不可见，并不会销毁。
 
-transaction.show()：显示之前隐藏的Fragment。
+transaction.show();//显示之前隐藏的Fragment。
 
-transaction.commit()：提交一个事务。
+transaction.commit();//提交一个事务。
 
-transaction.detach()：会将view从UI中移除,和remove()不同,此时fragment的状态依然由FragmentManager维护。
+transaction.detach();//会将view从UI中移除,和remove()不同,此时fragment的状态依然由FragmentManager维护。
 
-transaction.attach():重建view视图，附加到UI上并显示。
+transaction.attach();//重建view视图，附加到UI上并显示。
+```
 
-注意：在用fragment的时候，可能会经常遇到这样Activity状态不一致：State loss这样的错误。主要是因为：commit方法一定要在Activity.onSaveInstance()之前调用。
+注意：
 
-a、比如：我在FragmentA中的EditText填了一些数据，当切换到FragmentB时，如果希望会到A还能看到数据，则适合你的就是hide和show；也就是说，希望保留用户操作的面板，你可以使用hide和show，当然了不要使劲在那new实例，进行下非null判断。
+- 在用`Fragment`的时候，可能会经常遇到这样`Activity`状态不一致：State loss这样的错误。主要是因为：commit方法一定要在`Activity.onSaveInstance()`之前调用。
 
-b、再比如：我不希望保留用户操作，你可以使用remove()，然后add()；或者使用replace()这个和remove,add是相同的效果。
+  - 比如：我在`FragmentA`中的`EditText`填了一些数据，当切换到`FragmentB`时，如果希望会到A还能看到数据，则适合你的就是hide和show；也就是说，希望保留用户操作的面板，你可以使用hide和show，当然了不要使劲在那new实例，进行下非null判断。
 
-c、remove和detach有一点细微的区别，在不考虑回退栈的情况下，remove会销毁整个Fragment实例，而detach则只是销毁其视图结构，实例并不会被销毁。那么二者怎么取舍使用呢？如果你的当前Activity一直存在，那么在不希望保留用户操作的时候，你可以优先使用detach。
+  - 再比如：我不希望保留用户操作，你可以使用remove()，然后add()；或者使用replace()这个和remove,add是相同的效果。
+
+  - remove和detach有一点细微的区别，在不考虑回退栈的情况下，remove会销毁整个Fragment实例，而detach则只是销毁其视图结构，实例并不会被销毁。那么二者怎么取舍使用呢？如果你的当前Activity一直存在，那么在不希望保留用户操作的时候，你可以优先使用detach。
 
 **示例**
 
-![image-20220302110520216](G:/notes/se/android/Android_files/image-20220302110520216.png)
+![image-20220302110520216](../imgs/image-20220302110520216.png)
 
-![image-20220302110531350](G:/notes/se/android/Android_files/image-20220302110531350.png)
+![image-20220302110531350](../imgs/image-20220302110531350.png)
 
 # 通信
 
 ## ①fragment与fragment通信
 
-不同的fragment，他们之间的通信要依靠activity来完成。我们可以把他看成Fragment->Activity->Fragment,因为两个乃至多个fragment是依附于同一个activity,所以完全可以通过把值传递到共同依附的Activity,然后通过Bundle传给另一个fragment。
+不同的`fragment`，他们之间的通信要依靠`activity`来完成。我们可以把他看成Fragment->Activity->Fragment,因为两个乃至多个`fragment`是依附于同一个`activity`,所以完全可以通过把值传递到共同依附的`Activity`,然后通过`Bundle`传给另一个`fragment`。
 
 ### 方式一：先调用findFragmentById()方法根据id获得fragment的对象，然后调用fragment中的方法进行赋值.
 
+Code：
+
+```java
 manager.findFragmentById(); //根据ID来找到对应的Fragment实例，主要用在静态添加fragment的布局中，因为静态添加的fragment才会有ID.
 
 manager.findFragmentByTag();//根据TAG找到对应的Fragment实例，主要用于在动态添加的fragment中，根据TAG来找到fragment实例
 
 manager.getFragments();//获取所有被add进Activity中的Fragment
+```
 
-直接在一个Fragment中调用另外一个Fragment的公开方法,前提是要先拿到另外一个Fragment的实例。
+注意：
 
-一般情况下，我们都是动态添加Fragment的，所以通过在add每个Fragment的时候，给每个Fragment设置个tag。
+- 直接在一个`Fragment`中调用另外一个`Fragment`的公开方法,前提是要先拿到另外一个`Fragment`的实例。
+
+- 一般情况下，我们都是动态添加`Fragment`的，所以通过在add每个`Fragment`的时候，给每个`Fragment`设置个tag。
+
+Example：
+
+**①Activity**
 
 ```java
 public class MainActivity extends FragmentActivity {
@@ -157,9 +178,9 @@ public class MainActivity extends FragmentActivity {
 }
 ```
 
-在Activity创建的时候，添加上所有的fragment,并为每个fragment设置tag，这样才会在每个fragment中通过findFragmentByTag()时，不会出现空指针。
+在`Activity`创建的时候，添加上所有的`fragment`,并为每个`fragment`设置tag，这样才会在每个`fragment`中通过`findFragmentByTag()`时，不会出现空指针。
 
-**LeftFragment**
+**②LeftFragment**
 
 ```java
 public class LeftFragment extends Fragment {
@@ -194,7 +215,7 @@ public class LeftFragment extends Fragment {
 }
 ```
 
-**RightFragment**
+**③RightFragment**
 
 ```java
 public class RightFragment extends Fragment {
@@ -222,17 +243,20 @@ public class RightFragment extends Fragment {
 
 这种方式是两个fragment直接通信的。（不推荐使用）
 
-### 方式二：通过接口回调的方法实现另个fragment之间的通信
 
-举例，比如点击MessageFragment的Buton按钮，给CommunityFragment中的TextView传递数据。
 
-我们就需要在MessageFragment中定义接口，并定义回调的方法，该方法的参数中传一个String的字符串。接着让附属Activity实现这个接口，并重写回调方法，也就得到到传过来的数据，然后通过findFragmentByTag()的方法获取要传给的CommunityFragment的实例。
+### 方式二：通过接口回调的方法实现两个fragment之间的通信
 
-在CommunityFragment中定义一个方法用来接收这个数据，然后用对象直接调用这个方法将参数传递给这个方法，就可以了。
+举例，比如点击`MessageFragment`的Button按钮，给`CommunityFragment`中的TextView传递数据。
 
-在MessageFragment中定义接口，并定义回调的方法，该方法的参数中传一个String的字符串
+我们就需要在`MessageFragment`中定义接口，并定义回调的方法，该方法的参数中传一个String的字符串。接着让附属Activity实现这个接口，并重写回调方法，也就得到到传过来的数据，然后通过`findFragmentByTag()`的方法获取要传给的`CommunityFragment`的实例。
 
-**MessageFragment**
+Step：
+
+1. 在CommunityFragment中定义一个方法用来接收这个数据，然后用对象直接调用这个方法将参数传递给这个方法，就可以了。
+2. 在MessageFragment中定义接口，并定义回调的方法，该方法的参数中传一个String的字符串
+
+**①MessageFragment**
 
 ```java
 public class MessageFragment extends Fragment {
@@ -270,7 +294,7 @@ public class MessageFragment extends Fragment {
 }
 ```
 
-**AddFragmentActivity**
+**②AddFragmentActivity**
 
 ```java
 public class AddFragmentActivity extends FragmentActivity implements MessageFragment.MessageListener{
@@ -404,7 +428,7 @@ public class AddFragmentActivity extends FragmentActivity implements MessageFrag
 
 在CommunityFragment中定义一个方法用来接收数据
 
-**CommunityFragment**
+**③CommunityFragment**
 
 ```java
  
@@ -442,23 +466,31 @@ public class CommunityFragment extends Fragment {
 
 接口的方式是我们推荐的，但是，传统的接口方式会造成一些问题，如果主Activity实现了多个Fragment的通讯回调接口，那我们需要implements很多的接口，类中还要实现一大堆接口的方法，显得有点繁琐。
 
+
+
 ### 方式三：使用EventBus
 
 EventBus：使用方便，但其使用的是反射原理，会有稍微的延迟，并且他人维护不方便；
 
 static静态变量：使用方便，但是，每个static变量都会占用一块内存区，Android系统分配给每个App的内存是有限的（63M），过多很容易造成App内存溢出；
 
+
+
 ### 方式四：广播
 
 广播Broadcast Receiver：Android的广播是有限制的，除了系统的广播外，其他的广播尽量少用。另外，广播会有延迟；
 
+
+
 ## ②Activity向Fragment传值
 
-在activity中建一个bundle，把要传的值存入bundle，然后通过fragment的setArguments（bundle）传到fragment，在fragment中，用getArguments接收。
+原理：
+
+- 在`activity`中建一个`bundle`，把要传的值存入`bundle`，然后通过`fragment`的`setArguments`（bundle）传到`fragment`，在`fragment`中，用`getArguments`接收。
 
 就动态添加fragment的例子，在添加每个fragment之前，使用Bundle传输数据给每个fragment。
 
-**Activity中**
+**①Activity**
 
 ```java
  private void initView() {
@@ -522,7 +554,7 @@ static静态变量：使用方便，但是，每个static变量都会占用一�
     }
 ```
 
-**Fragment中**
+**②Fragment中**
 
 ```java
 public class HomeFragment extends Fragment {
@@ -545,23 +577,19 @@ public class HomeFragment extends Fragment {
 }
 ```
 
+
+
 ## ③Fragment向Activity传值
 
 首先定义一个接口：
 
 ```java
-/**
- * Created by ${wcystart}
- * date:on 2019/1/22
- * description: HomeFragment中通过接口回调的方式向Activity传输数据
- */
- 
 public interface IHomeCallBack  {
     void getMessageFromHomeFragment(String home);
 }
 ```
 
-接着在Fragment中设置接口回调的方法：
+①接着在Fragment中设置接口回调的方法：
 
 ```java
 public class HomeFragment extends Fragment {
@@ -572,7 +600,7 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, null);
         mTvHome = view.findViewById(R.id.tv_home);
-         initView();
+        initView();
         return view;
     }
  
@@ -588,7 +616,7 @@ public class HomeFragment extends Fragment {
 }
 ```
 
-最后在Activity中回调
+②最后在Activity中回调
 
 ```java
 public class AddFragmentActivity extends FragmentActivity {
@@ -606,7 +634,6 @@ public class AddFragmentActivity extends FragmentActivity {
     private FragmentManager mSupportFragmentManager;
     private FragmentTransaction mTransaction;
     private TextView mTvMain;
- 
  
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -766,5 +793,3 @@ public class MessageFragment extends Fragment {
 然后让Fragment依附的activity实现这个接口，然后重写sendMessage()方法，这样我们就可以把数据传过来了。
 
 这种方案应该是既能达到Fragment复用，又能达到很好的可维护性，并且性能也是杠杠的，所以说推荐使用。
-
-至此，Fragment与Activity通信的方式就完成了。
