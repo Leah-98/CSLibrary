@@ -790,6 +790,247 @@ public class MessageFragment extends Fragment {
 }
 ```
 
-然后让Fragment依附的activity实现这个接口，然后重写sendMessage()方法，这样我们就可以把数据传过来了。
+然后让`Fragment`依附的`activity`实现这个接口，然后重写`sendMessage()`方法，这样我们就可以把数据传过来了。
 
 这种方案应该是既能达到Fragment复用，又能达到很好的可维护性，并且性能也是杠杠的，所以说推荐使用。
+
+
+
+# 其它
+
+## Fragment + ViewPager 懒加载
+
+ViewPager：ViewPager是一个在Android平台上常用的视图容器，用于实现页面滑动切换效果。它允许用户通过左右滑动屏幕来浏览多个页面，类似于水平滚动的标签页或幻灯片展示。ViewPager通常与Fragment结合使用，每个页面都可以是一个独立的Fragment。
+
+懒加载字面意思就是当需要的时候才会去加载，不需要就不要加载。
+
+以前处理 Fragment 的懒加载，我们通常会在 Fragment 中处理 setUserVisibleHint + onHiddenChanged 这两个函数，而在 Androidx 模式下，我们可以使用 FragmentTransaction.setMaxLifecycle() 的方式来处理 Fragment 的懒加载。
+
+fragment 生命周期：
+onAttach -> onCreate -> onCreateView -> onViewCreated -> onActivityCreated -> onStart -> onResume
+
+一般在 onCreate方法中接收 bundle 中的数据，在 onCreateView 创建 view初始化 布局。在 onActivityCreated或者 onResume做懒加载
+
+### 传统模式
+
+```kotlin
+package com.zhaoyanjun.mode1
+
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+
+abstract class BaseFragment : Fragment() {
+    /**
+     * 用户是否可见
+     */
+    protected var mIsVisibleToUser = false
+
+    /**
+     * view是否创建
+     */
+    protected var mIsViewCreated = false
+
+    /**
+     * 是否是第一次加载
+     */
+    protected var mIsFirstLoad = false
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        mIsViewCreated = true
+        if (mIsVisibleToUser) {
+            firstLoad()
+        }
+    }
+
+    /**
+     * 懒加载模式下生效
+     */
+    fun firstLoad() {
+        if (mIsFirstLoad) {
+            return
+        }
+        mIsFirstLoad = true
+        onFirstLoad()
+    }
+
+    /**
+     * 懒加载的时候调用
+     */
+    open fun onFirstLoad() {
+
+    }
+
+    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        super.setUserVisibleHint(isVisibleToUser)
+        mIsVisibleToUser = isVisibleToUser
+        if (mIsVisibleToUser && mIsViewCreated) {
+            firstLoad()
+        }
+    }
+
+    override fun onDestroyView() {
+        mIsVisibleToUser = false
+        mIsViewCreated = false
+        mIsFirstLoad = false
+        super.onDestroyView()
+    }
+}
+```
+使用 ：
+
+```kotlin
+package com.zhaoyanjun.mode1
+
+import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import com.zhaoyanjun.R
+
+class ContentFragment : BaseFragment() {
+    private var param1: String? = null
+    private var rootView: View? = null
+    private var nameTv: TextView? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            param1 = it.getString(ARG_PARAM1)
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        rootView = inflater.inflate(R.layout.fragment_content, container, false)
+        nameTv = rootView?.findViewById(R.id.name)
+        return rootView
+    }
+
+    //懒加载更新数据
+    override fun onFirstLoad() {
+        super.onFirstLoad()
+        //第一次加载
+        Log.d("zhaoyanjun-", "firstLoad index: $param1")
+        nameTv?.text = param1
+    }
+
+    companion object {
+
+        private const val ARG_PARAM1 = "param1"
+
+        @JvmStatic
+        fun newInstance(param1: String) =
+            ContentFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_PARAM1, param1)
+                }
+            }
+    }
+}
+```
+### Androidx
+
+在使用 Androidx 的时候，会发现 FragmentPagerAdapter(fragmentManager) 方法过时了
+
+取而代之的是 两个参数的构造函数 。
+
+```kotlin
+public FragmentPagerAdapter(@NonNull FragmentManager fm,
+            @Behavior int behavior) {
+     mFragmentManager = fm;
+     mBehavior = behavior;
+}
+```
+
+
+mBehavior 有两个值：BEHAVIOR_SET_USER_VISIBLE_HINT 、BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT 。 默认情况下使用的是 BEHAVIOR_SET_USER_VISIBLE_HINT
+
+从官方的注释声明中，我们能得到如下两条结论：
+
+- 如果 behavior 的值为 BEHAVIOR_SET_USER_VISIBLE_HINT，那么当 Fragment 对用户的可见状态发生改变时，setUserVisibleHint 方法会被调用。
+- 如果 behavior 的值为 BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT ，那么当前选中的 Fragment在 Lifecycle.State#RESUMED 状态 ，其他不可见的 Fragment 会被限制在Lifecycle.State#STARTED 状态。
+
+所以我的的懒加载方案就呼之欲出了：
+
+
+
+```kotlin
+package com.zhaoyanjun.mode2
+
+import androidx.fragment.app.Fragment
+
+abstract class BaseFragment2 : Fragment() {
+    private var isLoaded = false
+
+    override fun onResume() {
+        super.onResume()
+        //增加了Fragment是否可见的判断
+        if (!isLoaded && !isHidden) {
+            isLoaded = true
+            onFirstLoad()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        isLoaded = false
+    }
+
+    open fun onFirstLoad() {
+
+    }
+}
+```
+使用：
+
+```kotlin
+class ContentFragment2 : BaseFragment2() {
+    private var param1: String? = null
+    private var rootView: View? = null
+    private var nameTv: TextView? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            param1 = it.getString(ARG_PARAM1)
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        rootView = inflater.inflate(R.layout.fragment_content, container, false)
+        nameTv = rootView?.findViewById(R.id.name)
+        return rootView
+    }
+
+    override fun onFirstLoad() {
+        super.onFirstLoad()
+        //第一次加载
+        Log.d("zhaoyanjun-mode2 ", "firstLoad index: $param1")
+        nameTv?.text = param1
+    }
+
+    companion object {
+
+        private const val ARG_PARAM1 = "param1"
+
+        @JvmStatic
+        fun newInstance(param1: String) =
+            ContentFragment2().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_PARAM1, param1)
+                }
+            }
+    }
+}
+```
