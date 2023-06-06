@@ -1,14 +1,14 @@
 # 介绍
 
-一个快速的AndroidUT框架
+实现了一套JVM能运行的Android SDK，从而能够脱离Android环境进行测试
 
 wiki：
 
 http://robolectric.org/
 
-# 使用
 
-## 添加依赖库：
+
+# 依赖库
 
 ```
 dependencies{
@@ -17,61 +17,11 @@ dependencies{
 }
 ```
 
-## TestRunner：
 
-you can use RobolectricTestRunner and AndroidJUnit4 in Robolectric tests
 
-## 配置：
+# 配置
 
-**配置 SDK 级别：**
-
-By default, Robolectric will run your code against the targetSdkVersion specified in your 
-
-manifest. If you want to test your code under a different SDK, you can specify the SDK 
-
-using the sdk, minSdk and maxSdk config properties.
-
-**配置 Application Class:**
-
-Robolectric will attempt to create an instance of your Application class as specified in the 
-
-manifest. If you want to provide a custom implementation, you can specify it by setting:
-
-@Config(application = CustomApplication.class)
-
-**配置 限定符：**
-
-You can explicitly configure the set of resource qualifiers in effect for a test;
-
-@Test @Config(qualifiers = "fr-rFR-w360dp-h640dp-xhdpi")
-
-**限定符表：**
-
-| **Property**                          | **Calculated value (if unspecified)**                        | **Default** | **Other rules**                                              |
-| ------------------------------------- | ------------------------------------------------------------ | ----------- | ------------------------------------------------------------ |
-| MCC and MNC                           | None.                                                        | None        |                                                              |
-| Language, region, and script (locale) | None.                                                        | en-rUS      |                                                              |
-| Layout direction                      | The locale’s layout direction.                               | ldltr       |                                                              |
-| Smallest width                        | The smaller of width and height                              | sw320dp     |                                                              |
-| Width                                 | If screen size is specified, the  corresponding width as declared here. | w320dp      | If screen orientation is specified,  width and height will be swapped as appropriate. |
-| Height                                | If screen size is specified, the  corresponding height as declared here. If screen aspect is specified as long,  the height is increased by 25%. | h470dp      | If screen orientation is specified,  width and height will be swapped as appropriate. |
-| Screen size                           | If height and width are specified, the  corresponding screen size as declared here. | normal      |                                                              |
-| Screen aspect                         | If width and height are specified, long  will be used if the ratio of height to width is at least 1.75. | notlong     |                                                              |
-| Round screen                          | If UI mode is watch  then round.                             | notround    |                                                              |
-| Wide color gamut                      | None.                                                        | nowidecg    |                                                              |
-| High dynamic range                    | None.                                                        | lowdr       |                                                              |
-| Screen orientation                    | If width and height are specified, port  or land as appropriate. | port        |                                                              |
-| UI mode                               | None.                                                        |             | normal, except this property isn’t  included in the qualifier list. |
-| Night mode                            | None.                                                        | notnight    |                                                              |
-| Screen pixel density                  | None.                                                        | mdpi        |                                                              |
-| Touchscreen type                      | None.                                                        | finger      |                                                              |
-| Keyboard availability                 | None.                                                        | keyssoft    |                                                              |
-| Primary text input method             | None.                                                        | nokeys      |                                                              |
-| Navigation key availability           | None.                                                        | navhidden   |                                                              |
-| Primary non-touch navigation method   | None.                                                        | nonav       |                                                              |
-| Platform version                      |                                                              |             | The SDK level currently active. Need  not be specified.      |
-
-配置方法：
+## 方法
 
 - robolectric.properties
   - 包级的配置
@@ -108,29 +58,505 @@ Keys in the file:
 - android_custom_package: Java packagename for the applications R class.
 - android_resource_apk: Path to a resources.ap_ file that contains binary resources and XML files produced by aapt tool, as well as merged assets.
 
+### @Config配置
 
+可以通过@Config注解来配置Robolectric运行时的行为。这个注解可以用来注释类和方法，如果类和方法同时使用了@Config，那么方法的设置会覆盖类的设置。如果你有很多测试类都采用同样的配置，那么你可以创建一个基类，通过@Config注解配置该基类，那么其他子类都能共享该配置。
 
-## **Shadows:**
+#### 配置 Constants
 
-Robolectric works by creating a runtime environment that includes the real Android framework code. This means when your tests or code under test calls into the Android framework you get a more realistic experience as for the most part the same code is executed as would be on a real device. There are limitations however:
+使用@RunWith(RobolectricTestRunner.class)时，必须要指定@Config(constants = BuildConfig.class)，这样它会从build/intermediates/目录下找到manifest、assets、resource等目录并加载相应的资源。
 
-- Native code - Android native code cannot execute on your development machine.
-- Out of process calls - There are no Android system services running on your development machine.
-- Inadequate testing APIs - Android includes next to no APIs suitable for testing
+```java
+@Config(constants = BuildConfig.class)
+```
 
+#### 配置 SDK 级别
 
+By default, Robolectric will run your code against the targetSdkVersion specified in your manifest. If you want to test your code under a different SDK, you can specify the SDK using the sdk, minSdk and maxSdk config properties.
 
-Robolectric fills these gaps with a set of classes known as Shadows. Each shadow can modify or extend the behavior of a corresponding class in the Android OS. When an Android class is instantiated, Robolectric looks for a corresponding shadow class, and if it finds one it creates a shadow object to associate with it.
+```java
+@Config(sdk = 23)
+```
 
+#### 配置 Application
 
+Robolectric will attempt to create an instance of your Application class as specified in the manifest. If you want to provide a custom implementation, you can specify it by setting:
 
-Using byte code instrumentation Robolectric is able to weave in cross platform fake implementations to substitute for native code and add additional APIs to make testing possible.
+```java
+@Config(application = BaseApplication.class)
+```
 
+#### 配置 resource、assets、manifest路径
 
+前面介绍配置constants属性时，Robolectric会自动加载build/intermediates目录下的资源文件，可以使用以下配置使Robolectric加载特定的资源文件。
 
-for shadow detail:please read the article
+```java
+@Config(assetDir = "some/build/path/assert",
+        resourceDir = "some/build/path/resourceDir",
+        manifest = "some/build/path/AndroidManifest.xml)
+```
 
-http://robolectric.org/extending/
+这里的路径很容易令人迷惑，必须要说明几点：
+
+- 如果使用了@Config(constants = BuildConfig.class)，资源文件的路径会固定为build目录。避免constants配置与自定义manifest配置一起使用，否则后者配置会不生效。
+- manifest设置的目录base于Unit Test Config里面的”Working Directory”
+- resourceDir、assetDir的目录base于manifest的父目录。
+
+```java
+    @Config(manifest = "src/test/AndroidManifest.xml", assetDir = "assetDir")
+    @Test
+    public void testConfigAssetDir() {
+        Application app = RuntimeEnvironment.application;
+        try {
+            InputStream inputStream = app.getAssets().open("test.txt");
+            int length = inputStream.available();
+            byte[] buffer = new byte[length];
+            inputStream.read(buffer);
+            inputStream.close();
+            String txt = new String(buffer);
+            System.out.println(txt);
+            inputStream.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+```
+
+![img_674031cac8514b75d5e936861a3f4ac4.png](E:\personal\CSLibrary\04_Android\imgs\img_674031cac8514b75d5e936861a3f4ac4.png)
+
+自定义manifest目录示意图
+
+该例子配置了一个指定的AndroidManifest.xml文件以及assets文件目录，测试程序读取assets里test.txt文件内容并打印出来。manifest的相对路径就是“UnitTest”工程里的“app”模块所在的文件路径，assetDir的相对路径就是AndroidManifest.xml文件的父目录路径。
+
+#### 配置 限定符
+
+下面的没懂
+
+You can explicitly configure the set of resource qualifiers in effect for a test;
+
+@Test @Config(qualifiers = "fr-rFR-w360dp-h640dp-xhdpi")
+
+**限定符表：**
+
+| **Property**                          | **Calculated value (if unspecified)**                        | **Default** | **Other rules**                                              |
+| ------------------------------------- | ------------------------------------------------------------ | ----------- | ------------------------------------------------------------ |
+| MCC and MNC                           | None.                                                        | None        |                                                              |
+| Language, region, and script (locale) | None.                                                        | en-rUS      |                                                              |
+| Layout direction                      | The locale’s layout direction.                               | ldltr       |                                                              |
+| Smallest width                        | The smaller of width and height                              | sw320dp     |                                                              |
+| Width                                 | If screen size is specified, the  corresponding width as declared here. | w320dp      | If screen orientation is specified,  width and height will be swapped as appropriate. |
+| Height                                | If screen size is specified, the  corresponding height as declared here. If screen aspect is specified as long,  the height is increased by 25%. | h470dp      | If screen orientation is specified,  width and height will be swapped as appropriate. |
+| Screen size                           | If height and width are specified, the  corresponding screen size as declared here. | normal      |                                                              |
+| Screen aspect                         | If width and height are specified, long  will be used if the ratio of height to width is at least 1.75. | notlong     |                                                              |
+| Round screen                          | If UI mode is watch  then round.                             | notround    |                                                              |
+| Wide color gamut                      | None.                                                        | nowidecg    |                                                              |
+| High dynamic range                    | None.                                                        | lowdr       |                                                              |
+| Screen orientation                    | If width and height are specified, port  or land as appropriate. | port        |                                                              |
+| UI mode                               | None.                                                        |             | normal, except this property isn’t  included in the qualifier list. |
+| Night mode                            | None.                                                        | notnight    |                                                              |
+| Screen pixel density                  | None.                                                        | mdpi        |                                                              |
+| Touchscreen type                      | None.                                                        | finger      |                                                              |
+| Keyboard availability                 | None.                                                        | keyssoft    |                                                              |
+| Primary text input method             | None.                                                        | nokeys      |                                                              |
+| Navigation key availability           | None.                                                        | navhidden   |                                                              |
+| Primary non-touch navigation method   | None.                                                        | nonav       |                                                              |
+| Platform version                      |                                                              |             | The SDK level currently active. Need  not be specified.      |
+
+- 
+
+# 使用
+
+## 例子
+
+```java
+//通过注解设置测试类的TestRunner
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class)
+public class MainActivityTest {
+
+    @Test
+    public void testClickBtnShouldStartSampleActivity() {
+        MainActivity mainActivity = Robolectric.setupActivity(MainActivity.class);
+        mainActivity.findViewById(R.id.btn_main).performClick();
+
+        Intent expectedIntent = new Intent(mainActivity, RobolectricSampleActivity.class);
+        Intent actualIntent = shadowOf(mainActivity).getNextStartedActivity();
+        Assert.assertEquals(expectedIntent.getComponent(), actualIntent.getComponent());
+    }
+
+}
+```
+
+## Activity
+
+### 生命周期
+
+在各个生命周期回调中修改Button的文本内容
+
+```java
+public class MainActivity extends Activity {
+
+    Button mBtn;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        mBtn = (Button) findViewById(R.id.btn_main);
+        mBtn.setText("onCreate");
+        mBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, RobolectricSampleActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mBtn.setText("onStart");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mBtn.setText("onResume");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mBtn.setText("onPause");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mBtn.setText("onStop");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mBtn.setText("onDestroy");
+    }
+}
+```
+
+测试代码如下：
+
+```java
+    @Test
+    public void testActivityLifeCycle() {
+        ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class);
+        //会调用Activity的onCreate()方法
+        controller.create();
+        Button btn = (Button) controller.get().findViewById(R.id.btn_main);
+        System.out.println(btn.getText().toString());
+        controller.start();
+        System.out.println(btn.getText().toString());
+        controller.resume();
+        System.out.println(btn.getText().toString());
+        controller.pause();
+        System.out.println(btn.getText().toString());
+        controller.stop();
+        System.out.println(btn.getText().toString());
+        controller.destroy();
+        System.out.println(btn.getText().toString());
+    }
+```
+
+控制台打印结果如下所示：
+
+```
+onCreate
+onStart
+onResume
+onPause
+onStop
+onDestroy
+```
+
+### setupActivity()与buildActivity()
+
+前面的示例中看到有2种创建Activity的方式：
+
+```java
+//直接创建一个Activity，创建后的Activity会经历onCreate()->onStart()-onResume()这几个生命周期
+MainActivity mainActivity = Robolectric.setupActivity(MainActivity.class);
+
+//创建一个ActivityController，然后需要自己手动控制Activity的生命周期
+ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class);
+```
+
+这2种方式有什么差别呢，查看setupActivity()的源码可以看到：
+
+```java
+  //实际上是调用了buildActivity()来创建Activity
+  public static <T extends Activity> T setupActivity(Class<T> activityClass) {
+    return buildActivity(activityClass).setup().get();
+  }
+
+  //这里手动控制了Activity的生命周期create()->start()->resume()
+  public ActivityController<T> setup() {
+    return create().start().postCreate(null).resume().visible();
+  }
+```
+
+### Toast
+
+```java
+    //点击button弹出toast信息
+    mBtn.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Toast.makeText(MainActivity.this, "toast sample", Toast.LENGTH_SHORT).show();
+        }
+    });
+    @Test
+    public void testToast() {
+        MainActivity activity = Robolectric.setupActivity(MainActivity.class);
+        Button btn = (Button) activity.findViewById(R.id.btn_main);
+        btn.performClick();
+        Assert.assertNotNull(ShadowToast.getLatestToast());
+        Assert.assertEquals("toast sample", ShadowToast.getTextOfLatestToast());
+    }
+```
+
+### Dialog
+
+```java
+    @Test
+    public void testDialog() {
+        MainActivity activity = Robolectric.setupActivity(MainActivity.class);
+        Button btn = (Button) activity.findViewById(R.id.btn_main);
+        btn.performClick();
+        Assert.assertNotNull(ShadowAlertDialog.getLatestAlertDialog());
+    }
+```
+
+## 资源文件
+
+```java
+    @Test
+    public void testApplication() {
+        Application app = RuntimeEnvironment.application;
+        Context shadow = ShadowApplication.getInstance().getApplicationContext();
+        Assert.assertSame(shadow, app);     
+        System.out.println(shadow.getResources().getString(R.string.app_name));
+    }
+```
+
+## Fragment
+
+```java
+    @Test
+    public void testFragment() {
+        TestFragment fragment = new TestFragment();
+        //该方法会添加Fragment到Activity中
+        SupportFragmentTestUtil.startFragment(fragment);
+        Assert.assertThat(fragment.getView(), CoreMatchers.notNullValue());
+    }
+```
+
+# Shadow
+
+顾名思义就是影子类，Robolectric定义了很多shadow class，用来修改或者扩展Android OS中类的行为。当一个Android中的类被实例化时，Robolectric会去寻找对应的影子类，如果找到了则会创建一个影子对象并与之相关联。每当Android类中的一个方法被调用时，Robolectric会保证其影子类中相应的方法会被先调用。这对所有的方法都适用，包括static和final类型的方法。
+
+```java
+Shadows.shadowOf(...);
+```
+
+通过该方法几乎可以获取大部分Android类的shadow class，例如：
+
+```java
+    @Test
+    public void testShadow() {
+        MainActivity activity = Robolectric.setupActivity(MainActivity.class);
+        Button btn = (Button) activity.findViewById(R.id.btn_main);
+        ShadowActivity shadowActivity = Shadows.shadowOf(activity);
+        ShadowTextView shadowTextView = Shadows.shadowOf(btn);
+    }
+```
+
+## Shadow Classes
+
+```java
+public class Company {
+
+    public void welcome() {
+        System.out.println("method called in Company.");
+    }
+
+    public void sayHello() {
+        System.out.println("say hello in Company.");
+    }
+
+}
+
+//通过@Implements注解来声明shadow类
+@Implements(Company.class)
+public class ShadowCompany {
+
+    //通过@Implementation注解来标记shadow方法，此方法声明必须与原Company中的方法声明一致
+    @Implementation
+    public void welcome() {
+        System.out.println("method called in ShadowCompany.");
+    }
+
+}
+```
+
+Shadows.shadowOf()方法不能作用于自定义shadow class，为了使Robolectric能够识别自定义shadow类，需要采用@Config注解，如下所示：
+
+```javascript
+    //通过shadows配置自定义的shadow class
+    @Config(shadows = {ShadowCompany.class})
+    @Test
+    public void testShadow() {
+        Company company = new Company();
+        company.welcome();
+        company.sayHello();
+    }
+```
+
+执行该测试方法，控制台打印结果如下：
+
+```
+method called in ShadowCompany.
+say hello in Company.
+```
+
+从以上控制台打印结果中可以看到，welcome()方法实际执行的是ShadowCompany中的方法。
+
+## Shadowing Constructors
+
+如果需要对构造函数进行shadow，必须实现__constructor__方法，并且该方法的参数必须与构造函数的参数一样。我们稍微修改前面的Company类以及ShadowCompany类，对其构造函数进行shadow。
+
+```java
+public class Company {
+
+    private String name;
+
+    //构造函数有一个参数name
+    public Company(String name) {
+        this.name = name;
+        System.out.println("company constructor");
+    }
+
+    public void welcome() {
+        System.out.println("method called in Company.");
+    }
+
+    public void sayHello() {
+        System.out.println("say hello in Company.");
+    }
+
+}
+
+@Implements(Company.class)
+public class ShadowCompany {
+
+    //必须实现该方法，参数与构造函数参数一样
+    public void __constructor__(String name) {
+        System.out.println("constructor in shadow class.");
+    }
+
+    @Implementation
+    public void welcome() {
+        System.out.println("method called in ShadowCompany.");
+    }
+
+}
+```
+
+这个时候再执行测试代码，返回结果如下，可以看到Company的构造函数并没有执行。
+
+```
+constructor in shadow class.
+method called in ShadowCompany.
+say hello in Company.
+```
+
+## Getting access to the real instance
+
+有时shadow类需要使用它们关联的真实对象，可以通过@RealObject注解声明一个属性来实现。
+
+```java
+@Implements(Company.class)
+public class ShadowCompany {
+
+    //Robolectric会自动设置真实的关联对象
+    @RealObject
+    private Company company;
+
+    @Implementation
+    public void welcome() {
+        System.out.println("method called in ShadowCompany." + company.getName());
+    }
+
+}
+```
+
+## 自定义shadow要点
+
+1. @Implements注解指定需要对哪个类进行shadow；
+2. @Implementation指定需要对哪个方法进行替换；
+3. 使用__constructor__来对构造器进行替换；
+4. @RealObject来引用真实的关联对象；
+
+# Robolectric的参数化测试
+
+前面介绍JUnit4的时候讲到，JUnit4中有个叫Parameterized的test runner，能够实现参数化测试，同样Robolectric也提供了同样的功能。
+
+```java
+@RunWith(ParameterizedRobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 23)
+public class ParameterizedTest {
+
+    @ParameterizedRobolectricTestRunner.Parameters
+    public static List data() {
+        return Arrays.asList(new Integer[][] {
+                {1, 1},
+                {2, 2},
+                {3, 3},
+                {4, 4}
+        });
+    }
+
+    private int i;
+    private int j;
+
+    public ParameterizedTest(int i, int j) {
+        this.i = i;
+        this.j = j;
+    }
+
+    @Test
+    public void testParameter() {
+        System.out.println("parameter is " + i + ", " + j);
+    }
+
+}
+```
+
+运行结果如下：
+
+```
+parameter is 1, 1
+parameter is 2, 2
+parameter is 3, 3
+parameter is 4, 4
+```
+
+# 其他
+
+## Robolectric的局限性
+
+1. 不支持JNI调用。凡是涉及到JNI调用的方法，都不能使用Robolectric来进行单元测试。对于复杂的应用，或多或少都会有JNI调用，可行的方案是设置一个全局变量来控制是否加载so库。
 
 
 
@@ -152,7 +578,7 @@ Robolectric + PowerMock
 
 ## Espresso & Robolectric
 
-Espresso is the view matching and interaction library of choice for instrumentation tests.
+Espresso不适用于本地单元测试（Local Unit Test）。Espresso是一个用于编写UI自动化测试的框架，它旨在模拟用户与应用程序交互的行为。它需要一个运行的设备或模拟器，并且与实际的应用程序进行交互。
 
 Since Robolectric 4.0, Espresso APIs are now supported in Robolectric tests.
 
