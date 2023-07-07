@@ -1,4 +1,4 @@
-![img](C:\Users\5109U25854\Desktop\Android项目构建流程_1.png)
+![img](..\imgs\Android项目构建流程_1.png)
 
 整体流程：
 
