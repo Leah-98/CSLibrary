@@ -1,1 +1,0 @@
-使用UiAutomatorView，设备需要root。

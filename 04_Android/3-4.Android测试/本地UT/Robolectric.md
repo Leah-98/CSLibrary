@@ -122,7 +122,7 @@ Robolectric will attempt to create an instance of your Application class as spec
     }
 ```
 
-![img_674031cac8514b75d5e936861a3f4ac4.png](E:\personal\CSLibrary\04_Android\imgs\img_674031cac8514b75d5e936861a3f4ac4.png)
+![img_674031cac8514b75d5e936861a3f4ac4.png](E:\source\github_ci\appassistant_workflow\notebook\imgs\img_674031cac8514b75d5e936861a3f4ac4.png)
 
 自定义manifest目录示意图
 
@@ -162,7 +162,7 @@ You can explicitly configure the set of resource qualifiers in effect for a test
 | Primary non-touch navigation method   | None.                                                        | nonav       |                                                              |
 | Platform version                      |                                                              |             | The SDK level currently active. Need  not be specified.      |
 
-- 
+
 
 # 使用
 
@@ -574,7 +574,7 @@ RobolectricTestRunner and add rule PowerMockRule to implement
 
 Robolectric + PowerMock
 
-![image-20230329141308184](E:\personal\CSLibrary\04_Android\imgs\image-20230329141308184.png)
+![image-20230329141308184](E:\source\github_ci\appassistant_workflow\notebook\imgs\image-20230329141308184.png)
 
 ## Espresso & Robolectric
 

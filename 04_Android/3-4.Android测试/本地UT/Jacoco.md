@@ -62,7 +62,7 @@ About the samples please refer to the p20,p21
 
 following is on the fly mode jacoco config:
 
-![image-20230329142814075](E:\personal\CSLibrary\04_Android\imgs\image-20230329142814075.png)
+![image-20230329142814075](E:\source\github_ci\appassistant_workflow\notebook\imgs\image-20230329142814075.png)
 
 
 
@@ -70,7 +70,7 @@ following is on the offline mode jacoco config:
 
 the mainSrc,javDebugTree,kotlinDebugTree is same as on the fly mode config
 
-![image-20230329142829931](E:\personal\CSLibrary\04_Android\imgs\image-20230329142829931.png)
+![image-20230329142829931](E:\source\github_ci\appassistant_workflow\notebook\imgs\image-20230329142829931.png)
 
 
 
