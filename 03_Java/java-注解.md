@@ -125,3 +125,221 @@ public @interface SuppressWarnings {
 | unchecked                | 抑制没有进行类型检查操作的警告                     | to suppress warnings relative to unchecked operations        |
 | unqualified-field-access | 抑制没有权限访问的域的警告                         | to suppress warnings relative to field access unqualified    |
 | unused                   | 抑制没被使用过的代码的警告                         | to suppress warnings relative to unused code                 |
+
+### 元注解
+
+上述内置注解的定义中使用了一些元注解（注解类型进行注解的注解类），在JDK 1.5中提供了4个标准的元注解：`@Target`，`@Retention`，`@Documented`，`@Inherited`, 在JDK 1.8中提供了两个元注解 `@Repeatable`和`@Native`。
+
+#### 元注解 - @Target
+
+> Target注解的作用是：描述注s解的使用范围（即：被修饰的注解可以用在什么地方） 。
+
+Target注解用来说明那些被它所注解的注解类可修饰的对象范围：注解可以用于修饰 packages、types（类、接口、枚举、注解类）、类成员（方法、构造方法、成员变量、枚举值）、方法参数和本地变量（如循环变量、catch参数），在定义注解类时使用了@Target 能够更加清晰的知道它能够被用来修饰哪些对象，它的取值范围定义在ElementType 枚举中。
+
+```java
+public enum ElementType {
+ 
+    TYPE, // 类、接口、枚举类
+ 
+    FIELD, // 成员变量（包括：枚举常量）
+ 
+    METHOD, // 成员方法
+ 
+    PARAMETER, // 方法参数
+ 
+    CONSTRUCTOR, // 构造方法
+ 
+    LOCAL_VARIABLE, // 局部变量
+ 
+    ANNOTATION_TYPE, // 注解类
+ 
+    PACKAGE, // 可用于修饰：包
+ 
+    TYPE_PARAMETER, // 类型参数，JDK 1.8 新增
+ 
+    TYPE_USE // 使用类型的任何地方，JDK 1.8 新增
+ 
+}
+```
+
+#### 元注解 - @Retention & @RetentionTarget
+
+> Reteniton注解的作用是：描述注解保留的时间范围（即：被描述的注解在它所修饰的类中可以被保留到何时） 。
+
+Reteniton注解用来限定那些被它所注解的注解类在注解到其他类上以后，可被保留到何时，一共有三种策略，定义在RetentionPolicy枚举中。
+
+```java
+public enum RetentionPolicy {
+ 
+    SOURCE,    // 源文件保留
+    CLASS,       // 编译期保留，默认值
+    RUNTIME   // 运行期保留，可通过反射去获取注解信息
+}
+```
+
+为了验证应用了这三种策略的注解类有何区别，分别使用三种策略各定义一个注解类做测试。
+
+```java
+@Retention(RetentionPolicy.SOURCE)
+public @interface SourcePolicy {
+ 
+}
+@Retention(RetentionPolicy.CLASS)
+public @interface ClassPolicy {
+ 
+}
+@Retention(RetentionPolicy.RUNTIME)
+public @interface RuntimePolicy {
+ 
+}
+```
+
+用定义好的三个注解类分别去注解一个方法。
+
+```java
+public class RetentionTest {
+ 
+	@SourcePolicy
+	public void sourcePolicy() {
+	}
+ 
+	@ClassPolicy
+	public void classPolicy() {
+	}
+ 
+	@RuntimePolicy
+	public void runtimePolicy() {
+	}
+}
+```
+
+通过执行 `javap -verbose RetentionTest`命令获取到的RetentionTest 的 class 字节码内容如下。
+
+```java
+{
+  public retention.RetentionTest();
+    flags: ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 3: 0
+
+  public void sourcePolicy();
+    flags: ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         0: return
+      LineNumberTable:
+        line 7: 0
+
+  public void classPolicy();
+    flags: ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         0: return
+      LineNumberTable:
+        line 11: 0
+    RuntimeInvisibleAnnotations:
+      0: #11()
+
+  public void runtimePolicy();
+    flags: ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         0: return
+      LineNumberTable:
+        line 15: 0
+    RuntimeVisibleAnnotations:
+      0: #14()
+}
+```
+
+从 RetentionTest 的字节码内容我们可以得出以下两点结论：
+
+- 编译器并没有记录下 sourcePolicy() 方法的注解信息；
+- 编译器分别使用了 `RuntimeInvisibleAnnotations` 和 `RuntimeVisibleAnnotations` 属性去记录了`classPolicy()`方法 和 `runtimePolicy()`方法 的注解信息；
+
+#### 元注解 - @Documented
+
+> Documented注解的作用是：描述在使用 javadoc 工具为类生成帮助文档时是否要保留其注解信息。
+
+以下代码在使用Javadoc工具可以生成`@TestDocAnnotation`注解信息。
+
+```java
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
+ 
+@Documented
+@Target({ElementType.TYPE,ElementType.METHOD})
+public @interface TestDocAnnotation {
+ 
+	public String value() default "default";
+}
+@TestDocAnnotation("myMethodDoc")
+public void testDoc() {
+
+}
+```
+
+#### 元注解 - @Inherited
+
+> Inherited注解的作用：被它修饰的Annotation将具有继承性。如果某个类使用了被@Inherited修饰的Annotation，则其子类将自动具有该注解。
+
+我们来测试下这个注解：
+
+- 定义`@Inherited`注解：
+
+```java
+@Inherited
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE,ElementType.METHOD})
+public @interface TestInheritedAnnotation {
+    String [] values();
+    int number();
+}
+```
+
+- 使用这个注解
+
+```java
+@TestInheritedAnnotation(values = {"value"}, number = 10)
+public class Person {
+}
+
+class Student extends Person{
+	@Test
+    public void test(){
+        Class clazz = Student.class;
+        Annotation[] annotations = clazz.getAnnotations();
+        for (Annotation annotation : annotations) {
+            System.out.println(annotation.toString());
+        }
+    }
+}
+```
+
+- 输出
+
+```java
+xxxxxxx.TestInheritedAnnotation(values=[value], number=10)
+```
+
+即使Student类没有显示地被注解`@TestInheritedAnnotation`，但是它的父类Person被注解，而且`@TestInheritedAnnotation`被`@Inherited`注解，因此Student类自动有了该注解。
+
+#### 元注解 - @Repeatable (Java8)
+
+`@Repeatable`请参考[Java 8 - 重复注解]()
+
+#### 元注解 - @Native (Java8)
+
+使用 @Native 注解修饰成员变量，则表示这个变量可以被本地代码引用，常常被代码生成工具使用。对于 @Native 注解不常使用，了解即可
+
+### 注解与反射接口
+
+------
+
+著作权归@pdai所有 原文链接：https://pdai.tech/md/java/basic/java-basic-x-annotation.html
