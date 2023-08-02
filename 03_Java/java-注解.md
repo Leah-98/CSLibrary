@@ -371,3 +371,117 @@ AnnotatedElement 接口是所有程序元素（Class、Method和Constructor）�
 - `Annotation[] getDeclaredAnnotations()`
 
 返回直接存在于此元素上的所有注解及注解对应的重复注解容器。与此接口中的其他方法不同，该方法将忽略继承的注解。如果没有注释直接存在于此元素上，则返回长度为零的一个数组。该方法的调用者可以随意修改返回的数组，而不会对其他调用者返回的数组产生任何影响。
+
+
+
+### 自定义注解
+
+> 当我们理解了内置注解, 元注解和获取注解的反射接口后，我们便可以开始自定义注解了。这个例子我把上述的知识点全部融入进来, 代码很简单：
+
+- 定义自己的注解
+
+```java
+package com.pdai.java.annotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MyMethodAnnotation {
+
+    public String title() default "";
+
+    public String description() default "";
+
+}
+```
+
+- 使用注解
+
+```java
+package com.pdai.java.annotation;
+
+import java.io.FileNotFoundException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
+public class TestMethodAnnotation {
+
+    @Override
+    @MyMethodAnnotation(title = "toStringMethod", description = "override toString method")
+    public String toString() {
+        return "Override toString method";
+    }
+
+    @Deprecated
+    @MyMethodAnnotation(title = "old static method", description = "deprecated old static method")
+    public static void oldMethod() {
+        System.out.println("old method, don't use it.");
+    }
+
+    @SuppressWarnings({"unchecked", "deprecation"})
+    @MyMethodAnnotation(title = "test method", description = "suppress warning static method")
+    public static void genericsTest() throws FileNotFoundException {
+        List l = new ArrayList();
+        l.add("abc");
+        oldMethod();
+    }
+}
+```
+
+- 用反射接口获取注解信息
+
+在TestMethodAnnotation中添加Main方法进行测试：
+
+```java
+public static void main(String[] args) {
+    try {
+        // 获取所有methods
+        Method[] methods = TestMethodAnnotation.class.getClassLoader()
+                .loadClass(("com.pdai.java.annotation.TestMethodAnnotation"))
+                .getMethods();
+
+        // 遍历
+        for (Method method : methods) {
+            // 方法上是否有MyMethodAnnotation注解
+            if (method.isAnnotationPresent(MyMethodAnnotation.class)) {
+                try {
+                    // 获取并遍历方法上的所有注解
+                    for (Annotation anno : method.getDeclaredAnnotations()) {
+                        System.out.println("Annotation in Method '"
+                                + method + "' : " + anno);
+                    }
+
+                    // 获取MyMethodAnnotation对象信息
+                    MyMethodAnnotation methodAnno = method
+                            .getAnnotation(MyMethodAnnotation.class);
+
+                    System.out.println(methodAnno.title());
+
+                } catch (Throwable ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    } catch (SecurityException | ClassNotFoundException e) {
+        e.printStackTrace();
+    }
+}
+```
+
+- 测试的输出
+
+```java
+Annotation in Method 'public static void com.pdai.java.annotation.TestMethodAnnotation.oldMethod()' : @java.lang.Deprecated()
+Annotation in Method 'public static void com.pdai.java.annotation.TestMethodAnnotation.oldMethod()' : @com.pdai.java.annotation.MyMethodAnnotation(title=old static method, description=deprecated old static method)
+old static method
+Annotation in Method 'public static void com.pdai.java.annotation.TestMethodAnnotation.genericsTest() throws java.io.FileNotFoundException' : @com.pdai.java.annotation.MyMethodAnnotation(title=test method, description=suppress warning static method)
+test method
+Annotation in Method 'public java.lang.String com.pdai.java.annotation.TestMethodAnnotation.toString()' : @com.pdai.java.annotation.MyMethodAnnotation(title=toStringMethod, description=override toString method)
+toStringMethod
+```
