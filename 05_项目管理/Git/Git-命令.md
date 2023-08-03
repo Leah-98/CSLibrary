@@ -196,6 +196,12 @@ git add *
 git reset .
 ```
 
+回退到某次commit但不修改本地文件
+
+```
+git reset --soft <commit_hash>
+```
+
 
 
 ### rm
