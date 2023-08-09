@@ -326,6 +326,15 @@ git branch -m <old-name> <new-name>
 
 
 
+合并两个分支，处于哪个分支，就合并到哪个分支上
+
+```
+git merge A //将A分支合并到当前分支上
+git merge A B //将A分支和B分支合并到当前分支上
+```
+
+
+
 ## 远程
 
 创建远程分支
