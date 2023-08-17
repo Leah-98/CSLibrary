@@ -362,6 +362,10 @@ ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActi
     }
 ```
 
+## 日志输出
+
+使用ShadowLog
+
 # Shadow
 
 顾名思义就是影子类，Robolectric定义了很多shadow class，用来修改或者扩展Android OS中类的行为。当一个Android中的类被实例化时，Robolectric会去寻找对应的影子类，如果找到了则会创建一个影子对象并与之相关联。每当Android类中的一个方法被调用时，Robolectric会保证其影子类中相应的方法会被先调用。这对所有的方法都适用，包括static和final类型的方法。
@@ -551,6 +555,225 @@ parameter is 2, 2
 parameter is 3, 3
 parameter is 4, 4
 ```
+
+# 内容更新
+
+**1.Robolectric配置**
+
+首先升级Robolectric的依赖至最新：
+
+```
+testImplementation "org.robolectric:robolectric:4.3.1"
+```
+
+在根目录的gradle.properties文件中添加：
+
+```
+android.enableUnitTestBinaryResources=true
+```
+
+之前的配置中，需要通过@Config注解指定constants = BuildConfig.class，也可指定sdk的版本信息：
+
+```
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 23)
+public class MainActivityTest {
+
+}
+```
+
+
+在4.0开始的版本中，默认不需要指定constants = BuildConfig.class，constants配置也被移除，所以默认可以去除@Config的这行固定配置。
+
+如果要指定sdk版本的话，可以在src/test/resources目录下创建一个名为robolectric.properties的文件在你所要生效的包名下。其中更深的包中的值覆盖更浅的包中的值。当测试类或方法有@Config注释，这些注释覆盖属性文件中的任何配置。具体如下图所示：
+
+![在这里插入图片描述](D:\personal\CSLibrary\04_Android\imgs\74)
+
+
+这样相比之前的方式确实友好很多。详细配置及其他用法可以参看官方文档。
+
+**2.Robolecture与AndroidX**
+
+随着AndroidX的到来，Android官方也提供了相应的测试框架。
+
+	testImplementation 'androidx.test:core:1.2.0'
+	testImplementation 'androidx.fragment:fragment-testing:1.1.0'
+	// AndroidJUnitRunner and JUnit Rules
+	testImplementation 'androidx.test:runner:1.2.0'
+	testImplementation 'androidx.test:rules:1.2.0'
+	// Assertions
+	testImplementation 'androidx.test.ext:junit:1.1.1'
+	testImplementation 'androidx.test.ext:truth:1.2.0'
+	testImplementation 'com.google.truth:truth:1.0'
+Robolectric在4.0开始也支持了官方测试库，并推荐使用它们。
+
+变更有以下几个方面：
+
+```java
+使用AndroidJUnit4代替RobolectricTestRunner:
+// 之前
+@RunWith(RobolectricTestRunner.class)
+public class MainActivityTest {
+
+}
+
+// 现在
+@RunWith(AndroidJUnit4.class)
+public class MainActivityTest {
+
+}
+```
+
+之前使用RuntimeEnvironment.application可以获取到Application，现在推荐使用getApplicationContext方法获取。
+
+```java
+import androidx.test.core.app.ApplicationProvider.getApplicationContext
+
+@Test
+public void testResources() {
+    Application application = getApplicationContext();
+    String appName = application.getString(R.string.app_name);
+    assertEquals("AndroidUT", appName);
+}
+```
+
+获取Activity方式调整。之前的方式是直接通过setupActivity或者buildActivity方法获取：
+MainActivity activity = Robolectric.setupActivity(MainActivity.class);
+
+```java
+// 或者
+ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class);
+MainActivity activity = controller.get();
+```
+
+
+现在：
+
+```java
+@RunWith(AndroidJUnit4.class)
+public class MainActivityTest {
+    @Rule
+    public ActivityTestRule<MainActivity> activityRule = new ActivityTestRule<>(MainActivity.class);
+
+	private MainActivity mainActivity;
+
+    @Before
+    public void setUp(){
+
+        mainActivity = activityRule.getActivity();
+        // 或者
+        ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class);
+        scenario.moveToState(Lifecycle.State.CREATED);
+        scenario.onActivity(activity -> {
+            mainActivity = activity;
+        });
+    }
+}
+```
+
+
+Fragment 获取方式大同小异，不过要注意添加testImplementation 'androidx.fragment:fragment-testing:1.1.0'依赖。
+
+```java
+@Test
+public void testFragment() {
+    FragmentScenario<SampleFragment> scenario = FragmentScenario.launch(SampleFragment.class);
+    scenario.onFragment(fragment -> assertNotNull(fragment.getView()));
+}
+```
+
+
+对于官方测试库的详细使用可以查看Android的官方文档
+
+**3.AssertJ-Android**
+之前有提到AssertJ-Android这个库，它是AssertJ的拓展，便于我们断言Android View。
+
+由于AndroidX的到来，这个库也就不太适用于未来。官方也觉得他并不是一个好的方式，所以暂停了维护。推荐我们使用Google的truth。并且truth这个库也内置在官方的测试框架里面。它和AssertJ很相似，有兴趣的可以了解一下。
+
+这里我暂时没有使用truth，只是用 AssertJ的方式替换了 AssertJ-Android。仅仅是个人习惯问题。
+
+之前的方式：
+
+```java
+import static org.assertj.android.api.Assertions.assertThat;
+    @Test
+    public void testView() {
+        // Button是否可见
+        assertThat(mJumpBtn).isVisible();
+        // LinearLayout 方向，子View数量
+        assertThat(mRoot)
+             .isVertical()
+             .hasChildCount(4);
+        // CheckBox是否未选中
+        assertThat(checkBox).isNotChecked();
+    }
+}
+```
+
+修改后：
+
+```java
+import static org.assertj.core.api.Assertions.assertThat;
+
+@Test
+public void testView() {
+	// AssertJ-Android (已不在维护)，这里就是用普通方法实现
+	// Button是否可见
+	assertThat(mJumpBtn.getVisibility()).isEqualTo(View.VISIBLE);
+    // LinearLayout 方向，子View数量
+    assertThat(mRoot.getOrientation()).isEqualTo(LinearLayout.VERTICAL);
+    assertThat(mRoot.getChildCount()).isEqualTo(4);
+    // CheckBox是否未选中
+    assertThat(checkBox.isChecked()).isEqualTo(false);
+}
+```
+
+**4.当前依赖版本**
+以下是当前项目所用到的测试框架的依赖版本：
+
+	//junit
+	testImplementation 'junit:junit:4.12'
+	//mockito
+	testImplementation "org.mockito:mockito-core:3.1.0"
+	//powermock
+	testImplementation "org.powermock:powermock-module-junit4:2.0.2"
+	testImplementation "org.powermock:powermock-module-junit4-rule:2.0.2"
+	testImplementation "org.powermock:powermock-api-mockito2:2.0.2"
+	testImplementation "org.powermock:powermock-classloading-xstream:2.0.2"
+	//robolectric
+	testImplementation "org.robolectric:robolectric:4.3.1"
+	//AssertJ
+	testImplementation 'org.assertj:assertj-core:3.13.2'
+	
+	// AndroidX所需
+	testImplementation 'androidx.test:core:1.2.0'
+	testImplementation 'androidx.fragment:fragment-testing:1.1.0'
+	// AndroidJUnitRunner and JUnit Rules
+	testImplementation 'androidx.test:runner:1.2.0'
+	testImplementation 'androidx.test:rules:1.2.0'
+	// Assertions
+	testImplementation 'androidx.test.ext:junit:1.1.1'
+	testImplementation 'androidx.test.ext:truth:1.2.0'
+	testImplementation 'com.google.truth:truth:1.0'
+最后我将修改后的代码也已经同步到了Github上，master分支是使用support 28.0依赖库的，androidx部分的改动放在了androidx分支上，便于大家查阅。
+
+内容暂时就这么多。后面如果新的改动，我也会更新在这篇博客当中。
+
+2020.01.16更新：
+
+更新gradle至3.x以后，原本的存放class文件目录发生了改变。所以使用jacoco时，需要修改指定的类文件夹(检查的覆盖类)地址：
+
+```java
+/intermediates/classes/debug
+```
+
+修改为：
+
+```
+/intermediates/javac/debug/compileDebugJavaWithJavac/classes
+```
+
+
 
 # 其他
 

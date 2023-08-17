@@ -199,6 +199,13 @@ public class PowerMockitoPrivateMethodTest {
     }
 ```
 
+上面的方法不成功，另一种方法：
+
+```java
+musicSearchWorker.setCommand(new JSONObject(COMMAND_SONG));
+Whitebox.invokeMethod(musicSearchWorker, "parseCommand");
+```
+
 ### (3)mock final 方法
 
 ```java
