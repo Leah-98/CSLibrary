@@ -81,6 +81,12 @@ git remote rm <repo-name>
 
 
 
+修改远程 Git 仓库的地址
+
+```
+git remote set-url <remote-name> <new-url>
+```
+
 # WorkZone
 
 ## 快照
