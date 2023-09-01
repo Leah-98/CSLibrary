@@ -45,3 +45,20 @@ Java容器里只能放对象，对于基本类型(int, long, float, double等)�
 4. 在实际添加大量元素前，我也可以使用ensureCapacity来手动增加ArrayList实例的容量，以减少递增式再分配的数量。新的容量需要大于原来容量的1.5倍，不然会被强行转化为1.5倍
 5. trimToSize()将底层数组的容量调整为当前列表保存的实际元素的大小
 6. ArrayList也采用了Fail-Fast的机制，通过记录modCount参数来实现。在面对并发的修改时，迭代器很快就会完全失败，而不是冒着在将来某个不确定时间发生任意不确定行为的风险。
+
+## LinkedList
+
+底层原理：
+
+- *LinkedList*底层通过双向链表实现，双向链表的每个节点用内部类*Node*表示，其中Node是私有的内部类。*LinkedList*通过`first`和`last`引用分别指向链表的第一个和最后一个元素。注意这里没有所谓的哑元，当链表为空的时候`first`和`last`都指向`null`。
+- getFirst(), getLast() 获取第一个元素， 和获取最后一个元素
+- removeFirst(), removeLast(), remove(e), remove(index) remove()方法也有两个版本，一个是删除跟指定元素相等的第一个元素remove(Object o)，另一个是删除指定下标处的元素remove(int index)  删除元素 - 指的是删除第一次出现的这个元素, 如果没有这个元素，则返回false；判断的依据是equals方法， 如果equals，则直接unlink这个node；由于LinkedList可存放null元素，故也可以删除第一次出现null的元素；remove(int index)使用的是下标计数， 只需要判断该index是否有元素即可，如果有则直接unlink这个node。
+- add()方法有两个版本，一个是add(E e)，该方法在LinkedList的末尾插入元素，因为有last指向链表末尾，在末尾插入元素的花费是常数时间。只需要简单修改几个相关引用即可；另一个是add(int index, E element)，该方法是在指定下表处插入元素，需要先通过线性查找找到具体位置，然后修改相关引用完成插入操作。
+- node(int index)函数有一点小小的trick，因为链表双向的，可以从开始往后找，也可以从结尾往前找，具体朝那个方向找取决于条件index < (size >> 1)，也即是index是靠近前端还是后端。从这里也可以看出，linkedList通过index检索元素的效率没有arrayList高。
+- addAll(index, c) 实现方式并不是直接调用add(index,e)来实现，主要是因为效率的问题，<u>另一个是fail-fast中modCount只会增加1次；</u>
+- clear()  为了让GC更快可以回收放置的元素，需要将node之间的引用关系赋空。
+
+使用注意：
+
+- *LinkedList*同时实现了*List*接口和*Deque*（双端队列）接口，也就是说它既可以看作一个顺序容器，又可以看作一个队列(*Queue*)，同时又可以看作一个栈(*Stack*)。当你需要使用栈或者队列时，可以考虑使用*LinkedList*，一方面是因为Java官方已经声明不建议使用*Stack*类，更遗憾的是，Java里根本没有一个叫做*Queue*的类(它是个接口名字)。关于栈或队列，现在的首选是*ArrayDeque*，它有着比*LinkedList*(当作栈或队列使用时)有着更好的性能。
+- *LinkedList*的实现方式决定了所有跟下标相关的操作都是线性时间，而在首段或者末尾删除元素只需要常数时间。为追求效率*LinkedList*没有实现同步(synchronized)，如果需要多个线程并发访问，可以先采用`Collections.synchronizedList()`方法对其进行包装。
