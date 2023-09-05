@@ -65,5 +65,74 @@ Java容器里只能放对象，对于基本类型(int, long, float, double等)�
 
 ## Stack & Queue 
 
-Java里有一个叫做*Stack*的类，却没有叫做*Queue*的类(它是个接口名字)。当需要使用栈时，Java已不推荐使用*Stack*，而是推荐使用更高效的*ArrayDeque*；既然*Queue*只是一个接口，当需要使用队列时也就首选*ArrayDeque*了(次选是*LinkedList*)。
+Java里有一个叫做*Stack*的类，却没有叫做*Queue*的类(它是个接口名字)。当需要使用栈时，Java已不推荐使用*Stack*，而是<u>推荐使用更高效的*ArrayDeque*</u>；既然*Queue*只是一个接口，当需要使用队列时也就首选*ArrayDeque*了(次选是*LinkedList*)。
 
+### Queue
+
+*Queue*接口继承自Collection接口，除了最基本的Collection的方法之外，它还支持额外的*insertion*, *extraction*和*inspection*操作。这里有两组格式，共6个方法，一组是抛出异常的实现；另外一组是返回值的实现(没有则返回null)。
+
+|         | Throws exception | Returns special value |
+| ------- | ---------------- | --------------------- |
+| Insert  | add(e)           | offer(e)              |
+| Remove  | remove()         | poll()                |
+| Examine | element()        | peek()                |
+
+element()/peek() 获取队列的头部元素，及最早进入队列的元素，但不会删除该元素
+
+### Deque
+
+`Deque`是"double ended queue", 表示双向的队列，英文读作"deck". Deque 继承自 Queue接口，除了支持Queue的方法之外，还支持`insert`, `remove`和`examine`操作，由于Deque是双向的，所以可以对队列的头和尾都进行操作，它同时也支持两组格式，一组是抛出异常的实现；另外一组是返回值的实现(没有则返回null)。共12个方法如下:
+
+|         | First Element - Head |               | Last Element - Tail |               |
+| ------- | -------------------- | ------------- | ------------------- | ------------- |
+|         | Throws exception     | Special value | Throws exception    | Special value |
+| Insert  | addFirst(e)          | offerFirst(e) | addLast(e)          | offerLast(e)  |
+| Remove  | removeFirst()        | pollFirst()   | removeLast()        | pollLast()    |
+| Examine | getFirst()           | peekFirst()   | getLast()           | peekLast()    |
+
+当把`Deque`当做FIFO的`queue`来使用时，元素是从`deque`的尾部添加，从头部进行删除的； 所以`deque`的部分方法是和`queue`是等同的。具体如下:
+
+| Queue Method | Equivalent Deque Method |
+| ------------ | ----------------------- |
+| add(e)       | addLast(e)              |
+| offer(e)     | offerLast(e)            |
+| remove()     | removeFirst()           |
+| poll()       | pollFirst()             |
+| element()    | getFirst()              |
+| peek()       | peekFirst()             |
+
+*Deque*的含义是“double ended queue”，即双端队列，它既可以当作栈使用，也可以当作队列使用。下表列出了*Deque*与*Queue*相对应的接口:
+
+| Queue Method | Equivalent Deque Method | 说明                                   |
+| ------------ | ----------------------- | -------------------------------------- |
+| `add(e)`     | `addLast(e)`            | 向队尾插入元素，失败则抛出异常         |
+| `offer(e)`   | `offerLast(e)`          | 向队尾插入元素，失败则返回`false`      |
+| `remove()`   | `removeFirst()`         | 获取并删除队首元素，失败则抛出异常     |
+| `poll()`     | `pollFirst()`           | 获取并删除队首元素，失败则返回`null`   |
+| `element()`  | `getFirst()`            | 获取但不删除队首元素，失败则抛出异常   |
+| `peek()`     | `peekFirst()`           | 获取但不删除队首元素，失败则返回`null` |
+
+下表列出了*Deque*与*Stack*对应的接口:
+
+| Stack Method | Equivalent Deque Method | 说明                                   |
+| ------------ | ----------------------- | -------------------------------------- |
+| `push(e)`    | `addFirst(e)`           | 向栈顶插入元素，失败则抛出异常         |
+| 无           | `offerFirst(e)`         | 向栈顶插入元素，失败则返回`false`      |
+| `pop()`      | `removeFirst()`         | 获取并删除栈顶元素，失败则抛出异常     |
+| 无           | `pollFirst()`           | 获取并删除栈顶元素，失败则返回`null`   |
+| `peek()`     | `getFirst()`            | 获取但不删除栈顶元素，失败则抛出异常   |
+| 无           | `peekFirst()`           | 获取但不删除栈顶元素，失败则返回`null` |
+
+#### ArrayDeque
+
+底层原理：
+
+- *ArrayDeque*底层通过数组实现，为了满足可以同时在数组两端插入或删除元素的需求，该数组还必须是循环的，即**循环数组(circular array)**，也就是说数组的任何一点都可能被看作起点或者终点。
+- 使用head = (head - 1) & (elements.length - 1)解决head下标为负值的情况。因为elements.length必需是2的指数倍，elements - 1就是二进制低位全1，跟head - 1相与之后就起到了取模的作用，如果head - 1为负数(其实只可能是-1)，则相当于对其取相对于elements.length的补码。
+- doubleCapacity() 会申请一个空间两倍于原数组的数组，然后将原数组复制过去。
+- 由于`ArrayDeque`中不允许放入`null`，当`elements[head] == null`时，意味着容器为空。
+
+使用注意：
+
+- *ArrayDeque*是非线程安全的(not thread-safe)，当多个线程同时使用的时候，需要程序员手动同步；
+- 该容器不允许放入`null`元素
