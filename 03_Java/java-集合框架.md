@@ -79,6 +79,46 @@ Java里有一个叫做*Stack*的类，却没有叫做*Queue*的类(它是个接�
 
 element()/peek() 获取队列的头部元素，及最早进入队列的元素，但不会删除该元素
 
+#### PriorityQueue
+
+前面以Java *ArrayDeque*为例讲解了*Stack*和*Queue*，其实还有一种特殊的队列叫做*PriorityQueue*，即优先队列。**优先队列的作用是能保证每次取出的元素都是队列中权值最小的**(Java的优先队列每次取最小元素，C++的优先队列每次取最大元素)。这里牵涉到了大小关系，**元素大小的评判可以通过元素本身的自然顺序(\*natural ordering\*)，也可以通过构造时传入的比较器**(*Comparator*，类似于C++的仿函数)。
+
+Java中*PriorityQueue*实现了*Queue*接口，不允许放入`null`元素；其通过堆实现，具体说是通过完全二叉树(*complete binary tree*)实现的**小顶堆**(任意一个非叶子节点的权值，都不大于其左右子节点的权值)，也就意味着可以通过数组来作为*PriorityQueue*的底层实现。
+
+![PriorityQueue_base.png](D:\personal\CSLibrary\03_Java\imgs\4.png)
+
+上图中我们给每个元素按照层序遍历的方式进行了编号，如果你足够细心，会发现父节点和子节点的编号是有联系的，更确切的说父子节点的编号之间有如下关系:
+
+```
+leftNo = parentNo*2+1
+rightNo = parentNo*2+2
+parentNo = (nodeNo-1)/2
+```
+
+通过上述三个公式，可以轻易计算出某个节点的父节点以及子节点的下标。这也就是为什么可以直接用数组来存储堆的原因。
+
+*PriorityQueue*的`peek()`和`element`操作是常数时间，`add()`, `offer()`, 无参数的`remove()`以及`poll()`方法的时间复杂度都是*log(N)*。
+
+**关于add() 和 offer()：**
+
+![PriorityQueue_offer.png](D:\personal\CSLibrary\03_Java\imgs\5.png)
+
+`add(E e)`和`offer(E e)`的语义相同，都是向优先队列中插入元素，只是`Queue`接口规定二者对插入失败时的处理不同，前者在插入失败时抛出异常，后则则会返回`false`。对于*PriorityQueue*这两个方法其实没什么差别。
+
+新加入的元素`x`可能会破坏小顶堆的性质，因此需要进行调整。调整的过程为** : 从`k`指定的位置开始，将`x`逐层与当前点的`parent`进行比较并交换，直到满足`x >= queue[parent]`为止**。注意这里的比较可以是元素的自然顺序，也可以是依靠比较器的顺序。
+
+注意数据存储的元素并不是递增的，只是保证子节点一定小于父节点，从而保证队列每次取出的元素都是队列中权值最小的。
+
+**关于remove() 和poll()**
+
+![PriorityQueue_offer.png](D:\personal\CSLibrary\03_Java\imgs\6.png)
+
+需要调用sitfDown()方法重新调整元素顺序：从`k`指定的位置开始，将`x`逐层向下与当前点的左右孩子中较小的那个交换，直到`x`小于或等于左右孩子中的任何一个为止。
+
+**remove(Object o)**
+
+remove(Object o)方法用于删除队列中跟o相等的某一个元素(如果有多个相等，只删除一个)，该方法不是Queue接口内的方法，而是Collection接口的方法。由于删除操作会改变队列结构，所以要进行调整；又由于删除元素的位置可能是任意的，所以调整过程比其它函数稍加繁琐。具体来说，remove(Object o)可以分为2种情况: 1. 删除的是最后一个元素。直接删除即可，不需要调整。2. 删除的不是最后一个元素，从删除点开始以最后一个元素为参照调用一次siftDown()
+
 ### Deque
 
 `Deque`是"double ended queue", 表示双向的队列，英文读作"deck". Deque 继承自 Queue接口，除了支持Queue的方法之外，还支持`insert`, `remove`和`examine`操作，由于Deque是双向的，所以可以对队列的头和尾都进行操作，它同时也支持两组格式，一组是抛出异常的实现；另外一组是返回值的实现(没有则返回null)。共12个方法如下:
