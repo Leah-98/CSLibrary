@@ -377,6 +377,16 @@ git pull origin
 
 
 
+# Commit
+
+修改上一次的commit-msg，后面不要接新的message，进入vim修改
+
+```java
+git commit --amend
+```
+
+
+
 # Tag
 
 本地创建
