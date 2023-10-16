@@ -1,8 +1,18 @@
 # Android架构
 
-![img](G:\notes\se\android\imgs\14)
+![img](..\imgs\14)
 
-Android平台的基础是Linux内核；ART依靠Linux内核来执行底层功能，例如线程和底层内存管理等。
+**LINUX KERNEL**: Linux core, the Android system is modified based on the Linux system. The bottom layer of Android is Linux, and most of them are some drivers for operating hardware, such as Display Driver, Audio Drivers, and so on.
+
+**LIBRARIES**: Some libraries written in C language to complete the core functions of Android, such as OpenGL | ES (Simplified Graphic Image Engine), WebKit (browser kernel), SQLite (lightweight database), Surface Manager ), Media Framework (Multimedia Framework), FreeType (font library), SGL (another graphics and image engine), SSL (TCP-based security protocol), libc (fragmented library).
+
+**APPLICATION FRAMEWORK**: Application framework layer, all written in Java language for developers to call.
+
+**APPLICATIONS**: Application layer, all the applications we install belong to this layer, such as WeChat, Plants vs. Zombies.
+
+**ANDROID RUNTIME**: Core Libraries: core library. Dalvik Virtual Machine: Android bottom layer is a Linux system, written in C and C ++ language, so Android program (written in Java language) needs a virtual machine to run on Linux, that is, DVM.
+
+
 
 # Android Framework 概述
 

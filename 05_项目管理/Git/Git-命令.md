@@ -239,7 +239,7 @@ git rm --f <文件路径/文件名>
 ```
 git clean -f #删除文件
 git clean -fd #删除文件和目录
-git clean -xfd #连 gitignore 的untrack 文件/目录也一起删掉 (慎用,一般这个是用来删掉编译出来的 .o之类的文件用的)  
+git clean -xfd #不会连 gitignore 的untrack 文件/目录也一起删掉 (慎用,一般这个是用来删掉编译出来的 .o之类的文件用的)  
 git clean -nxfd # 在用上述 git clean 前,墙裂建议加上 -n 参数来先看看会删掉哪些文件,防止重要文件被误删
 ```
 
