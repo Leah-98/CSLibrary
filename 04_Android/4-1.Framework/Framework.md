@@ -12,7 +12,41 @@
 
 **ANDROID RUNTIME**: Core Libraries: core library. Dalvik Virtual Machine: Android bottom layer is a Linux system, written in C and C ++ language, so Android program (written in Java language) needs a virtual machine to run on Linux, that is, DVM.
 
+# Framework layer
 
+## 1. Framework function
+
+Framework可以被简单地理解成API的仓库，这些API由Java写成，包含JNI方法。JNI会根据 core library 调用C/C++方法，最终访问到Linux Kernel。
+
+Framework层有两个角色：
+
+1. Write some standardized modules in Java and encapsulate them into a framework for APP layer developers to call and develop mobile applications with special services.
+
+2. Use the Java Native Interface to call the native method of the core lib layer. The JNI library is loaded when the Dalvik virtual machine is started. Dalvik will directly address this JNI method and then call it.
+
+一些重要的Framework层服务：
+
+**Activity Manager**: Used to manage the application life cycle and provide commonly used navigation and rollback functions.
+
+**Window Manager**: Provides some methods for us to access the mobile phone screen. Screen transparency, brightness, background.
+
+**Content Providers**: Allows applications to access the data of another application (such as a contact database), or share their own data.
+
+**View System**: Can be used to build applications. It includes Lists, Grids, Textboxes, Buttons, and even an embedded web browser.
+
+**Notification Manager**: Allows the application to display customized prompt information in the status bar.
+
+**Package Manager**: Provides access to system installation packages. Including installing and uninstalling applications, querying permission-related information, and querying Application-related information.
+
+**Resource Manager**: Provides access to non-code resources, such as local strings, graphics, and layout files (Layout files).
+
+**Location Manager**: Provides a way to obtain the address and location of the device. Obviously, GPS navigation can definitely use location services.
+
+其他：
+
+> **Telephony Manager**: It mainly provides a series of methods for accessing the status and information related to mobile phone communication, querying telecommunications network status information, sim card information, etc.
+>
+> **XMPP**: Extensible communication and presentation protocol. Formerly known as Jabber, it provides instant messaging services. For example, push function, Google Talk.
 
 # Android Framework 概述
 
