@@ -25,3 +25,13 @@ git config --global http.postBuffer 1048576000
 git config --global https.postBuffer 1048576000
 ```
 
+
+
+修改了`.gitignore`文件中的规则，之前的commit有需要忽略的文件，可以清除缓存区后重新提交：
+
+清空缓存区：
+
+```
+git rm -r --cached .
+```
+
