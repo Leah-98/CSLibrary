@@ -67,7 +67,7 @@ Java容器里只能放对象，对于基本类型(int, long, float, double等)�
 
 Java里有一个叫做*Stack*的类，却没有叫做*Queue*的类(它是个接口名字)。当需要使用栈时，Java已不推荐使用*Stack*，而是<u>推荐使用更高效的*ArrayDeque*</u>；既然*Queue*只是一个接口，当需要使用队列时也就首选*ArrayDeque*了(次选是*LinkedList*)。
 
-### Queue
+**Queue**
 
 *Queue*接口继承自Collection接口，除了最基本的Collection的方法之外，它还支持额外的*insertion*, *extraction*和*inspection*操作。这里有两组格式，共6个方法，一组是抛出异常的实现；另外一组是返回值的实现(没有则返回null)。
 
@@ -79,47 +79,7 @@ Java里有一个叫做*Stack*的类，却没有叫做*Queue*的类(它是个接�
 
 element()/peek() 获取队列的头部元素，及最早进入队列的元素，但不会删除该元素
 
-#### PriorityQueue
-
-前面以Java *ArrayDeque*为例讲解了*Stack*和*Queue*，其实还有一种特殊的队列叫做*PriorityQueue*，即优先队列。**优先队列的作用是能保证每次取出的元素都是队列中权值最小的**(Java的优先队列每次取最小元素，C++的优先队列每次取最大元素)。这里牵涉到了大小关系，**元素大小的评判可以通过元素本身的自然顺序(\*natural ordering\*)，也可以通过构造时传入的比较器**(*Comparator*，类似于C++的仿函数)。
-
-Java中*PriorityQueue*实现了*Queue*接口，不允许放入`null`元素；其通过堆实现，具体说是通过完全二叉树(*complete binary tree*)实现的**小顶堆**(任意一个非叶子节点的权值，都不大于其左右子节点的权值)，也就意味着可以通过数组来作为*PriorityQueue*的底层实现。
-
-![PriorityQueue_base.png](D:\personal\CSLibrary\03_Java\imgs\4.png)
-
-上图中我们给每个元素按照层序遍历的方式进行了编号，如果你足够细心，会发现父节点和子节点的编号是有联系的，更确切的说父子节点的编号之间有如下关系:
-
-```
-leftNo = parentNo*2+1
-rightNo = parentNo*2+2
-parentNo = (nodeNo-1)/2
-```
-
-通过上述三个公式，可以轻易计算出某个节点的父节点以及子节点的下标。这也就是为什么可以直接用数组来存储堆的原因。
-
-*PriorityQueue*的`peek()`和`element`操作是常数时间，`add()`, `offer()`, 无参数的`remove()`以及`poll()`方法的时间复杂度都是*log(N)*。
-
-**关于add() 和 offer()：**
-
-![PriorityQueue_offer.png](D:\personal\CSLibrary\03_Java\imgs\5.png)
-
-`add(E e)`和`offer(E e)`的语义相同，都是向优先队列中插入元素，只是`Queue`接口规定二者对插入失败时的处理不同，前者在插入失败时抛出异常，后则则会返回`false`。对于*PriorityQueue*这两个方法其实没什么差别。
-
-新加入的元素`x`可能会破坏小顶堆的性质，因此需要进行调整。调整的过程为** : 从`k`指定的位置开始，将`x`逐层与当前点的`parent`进行比较并交换，直到满足`x >= queue[parent]`为止**。注意这里的比较可以是元素的自然顺序，也可以是依靠比较器的顺序。
-
-注意数据存储的元素并不是递增的，只是保证子节点一定小于父节点，从而保证队列每次取出的元素都是队列中权值最小的。
-
-**关于remove() 和poll()**
-
-![PriorityQueue_offer.png](D:\personal\CSLibrary\03_Java\imgs\6.png)
-
-需要调用sitfDown()方法重新调整元素顺序：从`k`指定的位置开始，将`x`逐层向下与当前点的左右孩子中较小的那个交换，直到`x`小于或等于左右孩子中的任何一个为止。
-
-**remove(Object o)**
-
-remove(Object o)方法用于删除队列中跟o相等的某一个元素(如果有多个相等，只删除一个)，该方法不是Queue接口内的方法，而是Collection接口的方法。由于删除操作会改变队列结构，所以要进行调整；又由于删除元素的位置可能是任意的，所以调整过程比其它函数稍加繁琐。具体来说，remove(Object o)可以分为2种情况: 1. 删除的是最后一个元素。直接删除即可，不需要调整。2. 删除的不是最后一个元素，从删除点开始以最后一个元素为参照调用一次siftDown()
-
-### Deque
+**Deque**
 
 `Deque`是"double ended queue", 表示双向的队列，英文读作"deck". Deque 继承自 Queue接口，除了支持Queue的方法之外，还支持`insert`, `remove`和`examine`操作，由于Deque是双向的，所以可以对队列的头和尾都进行操作，它同时也支持两组格式，一组是抛出异常的实现；另外一组是返回值的实现(没有则返回null)。共12个方法如下:
 
@@ -163,7 +123,47 @@ remove(Object o)方法用于删除队列中跟o相等的某一个元素(如果�
 | `peek()`     | `getFirst()`            | 获取但不删除栈顶元素，失败则抛出异常   |
 | 无           | `peekFirst()`           | 获取但不删除栈顶元素，失败则返回`null` |
 
-#### ArrayDeque
+## PriorityQueue
+
+前面以Java *ArrayDeque*为例讲解了*Stack*和*Queue*，其实还有一种特殊的队列叫做*PriorityQueue*，即优先队列。**优先队列的作用是能保证每次取出的元素都是队列中权值最小的**(Java的优先队列每次取最小元素，C++的优先队列每次取最大元素)。这里牵涉到了大小关系，**元素大小的评判可以通过元素本身的自然顺序(\*natural ordering\*)，也可以通过构造时传入的比较器**(*Comparator*，类似于C++的仿函数)。
+
+Java中*PriorityQueue*实现了*Queue*接口，不允许放入`null`元素；其通过堆实现，具体说是通过完全二叉树(*complete binary tree*)实现的**小顶堆**(任意一个非叶子节点的权值，都不大于其左右子节点的权值)，也就意味着可以通过数组来作为*PriorityQueue*的底层实现。
+
+![PriorityQueue_base.png](D:\personal\CSLibrary\03_Java\imgs\4.png)
+
+上图中我们给每个元素按照层序遍历的方式进行了编号，如果你足够细心，会发现父节点和子节点的编号是有联系的，更确切的说父子节点的编号之间有如下关系:
+
+```
+leftNo = parentNo*2+1
+rightNo = parentNo*2+2
+parentNo = (nodeNo-1)/2
+```
+
+通过上述三个公式，可以轻易计算出某个节点的父节点以及子节点的下标。这也就是为什么可以直接用数组来存储堆的原因。
+
+*PriorityQueue*的`peek()`和`element`操作是常数时间，`add()`, `offer()`, 无参数的`remove()`以及`poll()`方法的时间复杂度都是*log(N)*。
+
+**关于add() 和 offer()：**
+
+![PriorityQueue_offer.png](D:\personal\CSLibrary\03_Java\imgs\5.png)
+
+`add(E e)`和`offer(E e)`的语义相同，都是向优先队列中插入元素，只是`Queue`接口规定二者对插入失败时的处理不同，前者在插入失败时抛出异常，后则则会返回`false`。对于*PriorityQueue*这两个方法其实没什么差别。
+
+新加入的元素`x`可能会破坏小顶堆的性质，因此需要进行调整。调整的过程为** : 从`k`指定的位置开始，将`x`逐层与当前点的`parent`进行比较并交换，直到满足`x >= queue[parent]`为止**。注意这里的比较可以是元素的自然顺序，也可以是依靠比较器的顺序。
+
+注意数据存储的元素并不是递增的，只是保证子节点一定小于父节点，从而保证队列每次取出的元素都是队列中权值最小的。
+
+**关于remove() 和poll()**
+
+![PriorityQueue_offer.png](D:\personal\CSLibrary\03_Java\imgs\6.png)
+
+需要调用sitfDown()方法重新调整元素顺序：从`k`指定的位置开始，将`x`逐层向下与当前点的左右孩子中较小的那个交换，直到`x`小于或等于左右孩子中的任何一个为止。
+
+**remove(Object o)**
+
+remove(Object o)方法用于删除队列中跟o相等的某一个元素(如果有多个相等，只删除一个)，该方法不是Queue接口内的方法，而是Collection接口的方法。由于删除操作会改变队列结构，所以要进行调整；又由于删除元素的位置可能是任意的，所以调整过程比其它函数稍加繁琐。具体来说，remove(Object o)可以分为2种情况: 1. 删除的是最后一个元素。直接删除即可，不需要调整。2. 删除的不是最后一个元素，从删除点开始以最后一个元素为参照调用一次siftDown()
+
+## ArrayDeque
 
 底层原理：
 
@@ -176,3 +176,53 @@ remove(Object o)方法用于删除队列中跟o相等的某一个元素(如果�
 
 - *ArrayDeque*是非线程安全的(not thread-safe)，当多个线程同时使用的时候，需要程序员手动同步；
 - 该容器不允许放入`null`元素
+
+# Map
+
+## HashSet & HashMap
+
+HashMap是对HashSet的封装
+
+哈希表是一种以键-值对存储数据的数据结构，它通过哈希函数将键映射到存储桶的位置。当你插入一个键-值对时，哈希表会使用哈希函数计算键的哈希值，并将值存储在相应的桶中。同样，在查找时，哈希表也会使用哈希函数计算键的哈希值，然后直接跳到存储桶的位置来获取值。
+
+特点：
+
+- 跟*TreeMap*不同，该容器不保证元素顺序，根据需要该容器可能会对元素重新哈希，元素的顺序也会被重新打散，因此不同时间迭代同一个*HashMap*的顺序可能会不同。 
+- 根据对冲突的处理方式不同，哈希表有两种实现方式，一种开放地址方式(Open addressing)，另一种是冲突链表方式(Separate chaining with linked lists)。**Java7 \*HashMap\*采用的是冲突链表方式**。
+- 如果选择合适的哈希函数，`put()`和`get()`方法可以在常数时间内完成。但在对*HashMap*进行迭代时，需要遍历整个table以及后面跟的冲突链表。因此对于迭代比较频繁的场景，不宜将*HashMap*的初始大小设的过大。
+
+使用注意：
+
+- *HashMap*实现了*Map*接口，即允许放入`key`为`null`的元素，也允许插入`value`为`null`的元素；
+- 除该类未实现同步外，其余跟`Hashtable`大致相同；
+- 有两个参数可以影响*HashMap*的性能: 初始容量(inital capacity)和负载系数(load factor)。初始容量指定了初始`table`的大小，负载系数用来指定自动扩容的临界值。当`entry`的数量超过`capacity*load_factor`时，容器将自动扩容并重新哈希。对于插入元素较多的场景，将初始容量设大可以减少重新哈希的次数。
+- 将对象放入到*HashMap*或*HashSet*中时，有两个方法需要特别关心: `hashCode()`和`equals()`。**`hashCode()`方法决定了对象会被放到哪个`bucket`里，当多个对象的哈希值冲突时，`equals()`方法决定了这些对象是否是“同一个对象”**。所以，如果要将自定义的对象放入到`HashMap`或`HashSet`中，需要**@Override** `hashCode()`和`equals()`方法。
+
+**get()**
+
+`get(Object key)`方法根据指定的`key`值返回对应的`value`，该方法调用了`getEntry(Object key)`得到相应的`entry`，然后返回`entry.getValue()`。因此`getEntry()`是算法的核心。 算法思想是首先通过`hash()`函数得到对应`bucket`的下标，然后依次遍历冲突链表，通过`key.equals(k)`方法来判断是否是要找的那个`entry`。
+
+**put()**
+
+`put(K key, V value)`方法是将指定的`key, value`对添加到`map`里。该方法首先会对`map`做一次查找，看是否包含该元组，如果已经包含则直接返回，查找过程类似于`getEntry()`方法；如果没有找到，则会通过`addEntry(int hash, K key, V value, int bucketIndex)`方法插入新的`entry`，插入方式为**头插法**。
+
+**remove()**
+
+`remove(Object key)`的作用是删除`key`值对应的`entry`，该方法的具体逻辑是在`removeEntryForKey(Object key)`里实现的。`removeEntryForKey()`方法会首先找到`key`值对应的`entry`，然后删除该`entry`(修改链表的相应引用)。查找过程跟`getEntry()`过程类似。
+
+### Java8 HashMap
+
+Java8 对 HashMap 进行了一些修改，最大的不同就是利用了红黑树，所以其由 **数组+链表+红黑树** 组成。
+
+根据 Java7 HashMap 的介绍，我们知道，查找的时候，根据 hash 值我们能够快速定位到数组的具体下标，但是之后的话，需要顺着链表一个个比较下去才能找到我们需要的，时间复杂度取决于链表的长度，为 O(n)。
+
+为了降低这部分的开销，在 Java8 中，当链表中的元素达到了 8 个时，会将链表转换为红黑树，在这些位置进行查找的时候可以降低时间复杂度为 O(logN)。
+
+![img](D:\personal\CSLibrary\03_Java\imgs\33.png)
+
+注意，上图是示意图，主要是描述结构，不会达到这个状态的，因为这么多数据的时候早就扩容了。
+
+Java7 中使用 Entry 来代表每个 HashMap 中的数据节点，Java8 中使用 Node，基本没有区别，都是 key，value，hash 和 next 这四个属性，不过，Node 只能用于链表的情况，红黑树的情况需要使用 TreeNode。
+
+我们根据数组元素中，第一个节点数据类型是 Node 还是 TreeNode 来判断该位置下是链表还是红黑树的。
+
