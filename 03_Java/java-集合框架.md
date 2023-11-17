@@ -281,3 +281,26 @@ class FIFOCache<K, V> extends LinkedHashMap<K, V>{
 }
 ```
 
+## TreeSet & TreeMap
+
+之所以把*TreeSet*和*TreeMap*放在一起讲解，是因为二者在Java里有着相同的实现，前者仅仅是对后者做了一层包装，也就是说**TreeSet里面有一个TreeMap(适配器模式)**。因此本文将重点分析*TreeMap*。
+
+特点：
+
+- ***TreeMap\*底层通过红黑树(Red-Black tree)实现**，也就意味着`containsKey()`, `get()`, `put()`, `remove()`都有着`log(n)`的时间复杂度。
+
+使用注意：
+
+- Java *TreeMap*实现了*SortedMap*接口，也就是说会按照`key`的大小顺序对*Map*中的元素进行排序，`key`大小的评判可以通过其本身的自然顺序(natural ordering)，也可以通过构造时传入的比较器(Comparator)。
+
+- 出于性能原因，*TreeMap*是非同步的(not synchronized)，如果需要在多线程环境使用，需要程序员手动同步；或者通过如下方式将*TreeMap*包装成(wrapped)同步的:
+
+  ```
+  SortedMap m = Collections.synchronizedSortedMap(new TreeMap(...));
+  ```
+
+## WeekHashMap
+
+将一对`key, value`放入到 WeakHashMap 里并不能避免该`key`值被GC回收，除非在 WeakHashMap 之外还有对该`key`的强引用。
+
+**特别适用于需要缓存的场景**
