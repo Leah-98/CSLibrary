@@ -2,15 +2,73 @@
 
 ![img](..\imgs\14)
 
-**LINUX KERNEL**: Linux core, the Android system is modified based on the Linux system. The bottom layer of Android is Linux, and most of them are some drivers for operating hardware, such as Display Driver, Audio Drivers, and so on.
+## **LINUX KERNEL**
 
-**LIBRARIES**: Some libraries written in C language to complete the core functions of Android, such as OpenGL | ES (Simplified Graphic Image Engine), WebKit (browser kernel), SQLite (lightweight database), Surface Manager ), Media Framework (Multimedia Framework), FreeType (font library), SGL (another graphics and image engine), SSL (TCP-based security protocol), libc (fragmented library).
+Linux core, the Android system is modified based on the Linux system. The bottom layer of Android is Linux, and most of them are some drivers for operating hardware, such as Display Driver, Audio Drivers, and so on.
 
-**APPLICATION FRAMEWORK**: Application framework layer, all written in Java language for developers to call.
+## HAL(硬件抽象层)
 
-**APPLICATIONS**: Application layer, all the applications we install belong to this layer, such as WeChat, Plants vs. Zombies.
+提供标准界面，向更高级别的Java API框架显示设备硬件功能。 HAL包含多个库模块，其中每个模块都为特定类型的硬件组件实现一个界面，例如相机或蓝牙模块。当框架API要求访问设备硬件时，Android系统将为该硬件组件加载库模块。
 
-**ANDROID RUNTIME**: Core Libraries: core library. Dalvik Virtual Machine: Android bottom layer is a Linux system, written in C and C ++ language, so Android program (written in Java language) needs a virtual machine to run on Linux, that is, DVM.
+## ANDROID RUNTIME
+
+Core Libraries: core library. Dalvik Virtual Machine: Android bottom layer is a Linux system, written in C and C ++ language, so Android program (written in Java language) needs a virtual machine to run on Linux, that is, DVM.
+
+对于运行Android5.0(API 21)或更高版本的设备，每个应用都在其自己的进程中运行，并且有其自己的AndroidRuntime（ART）实例。ART编写为通过执行DEX文件在低内存设备上运行多个虚拟机，DEX未见时一种专为Android设计的字节码格式，经过优化，使用的内存很少。编译工具链（例如Jack）将Java源代码编译为DEX字节码，使其可在Android平台上运行。
+
+ART的部分主要功能包括：
+
+- 预先（AOT）和即时（JIT）
+- 编译优化的垃圾回收（GC）
+- 在Android 9 （API 28）及更高版本的系统中，支持将应用软件包中的Dalvik Executable格式（DEX）文件转换为更紧凑的机器代码
+- 在Android 5.0 （API 21）之前，Dalvik是AndroidRuntime。如果您的应用在ART上运行效果很少，那么它应该也可以在Dalvik上运行，但反过来不一定。
+
+> Dalvik 是 Android 操作系统中用于执行应用程序的一个虚拟机（VM）。Dalvik 虚拟机是为了在资源受限的移动设备上运行效率更高的 Java 程序而设计的。
+>
+> 主要特点和作用包括：
+>
+> 1. **优化内存和性能：** Dalvik 虚拟机被设计为在移动设备上更高效地使用内存和处理器资源。它使用基于寄存器的指令集，与传统的 Java 虚拟机（如 Java SE 中的 JVM）不同。
+> 2. **DEX 文件格式：** Android 应用程序的 Java 代码经过编译后会生成 Dalvik 可执行文件，通常以 .dex 扩展名结尾。这个文件格式是为了在 Dalvik VM 上执行而优化过的。
+> 3. **运行在沙盒环境中：** Dalvik 虚拟机使得每个 Android 应用程序运行在其独立的进程中，并在沙盒环境中，这有助于提高系统的安全性和稳定性。
+> 4. **支持多任务处理：** Android 设备通常需要同时运行多个应用程序。Dalvik 虚拟机能够有效地管理多个应用程序的同时运行，通过使用不同的进程和线程来实现。
+> 5. **预编译和即时编译：** Dalvik 虚拟机支持预编译和即时编译技术，以提高应用程序的启动速度和运行效率。
+>
+> 需要注意的是，从 Android 5.0（Lollipop）版本开始，Android 引入了新的运行时环境，称为 ART（Android Runtime），取代了 Dalvik。ART 在性能和优化方面带来了更多的改进，包括提供了更快的应用启动速度和更低的内存占用。因此，Dalvik 在较新的 Android 版本中逐渐被淘汰。
+
+
+
+## Native C/C++ Libraries
+
+Some libraries written in C language to complete the core functions of Android, such as OpenGL | ES (Simplified Graphic Image Engine), WebKit (browser kernel), SQLite (lightweight database), Surface Manager ), Media Framework (Multimedia Framework), FreeType (font library), SGL (another graphics and image engine), SSL (TCP-based security protocol), libc (fragmented library).
+
+可提供Java API框架所使用的Java编程语言中的大部分功能，包括一些Java8语言功能，
+
+许多核心Android系统组件和服务（例如ART和HAL）构建自原生代码，需要以C和C++编写的原生库。Android平台提供Java框架API以向应用显示其中部分原生库的功能。例如，您也可以通过Android框架的Java OpenGL API访问 OpenGL ES，以支持在应用中绘制和操作2D和3D图形。
+
+如果开发的是需要C或C++代码的应用，可以使用Android NDK直接从原生代码访问某型原生平台库。
+
+> 什么情况下开发Android应用会需要C、C++代码？
+>
+> 在Android应用开发中，通常使用Java或Kotlin等高级编程语言来编写应用程序的逻辑和用户界面。然而，有些情况下，可能会需要使用C或C++等底层语言编写一部分代码。以下是一些情况下可能需要使用C、C++代码的情况：
+>
+> 1. **性能优化：** 如果你的应用对性能要求极高，特别是需要进行大量计算或处理大量数据的情况下，使用C或C++可以更好地控制底层资源，以提高执行效率。
+> 2. **现有库或代码：** 如果你要使用已有的C/C++库或代码，可以通过JNI（Java Native Interface）来调用这些库。这是一种使用Java代码调用本地（C/C++）代码的机制，使得你可以在Android应用中使用现有的本地库。
+> 3. **跨平台开发：** 如果你计划在多个平台上共享代码，尤其是在Android和iOS之间，可以考虑使用C++开发核心逻辑，然后在Android和iOS上通过相应的桥接层进行调用。
+> 4. **硬件相关操作：** 有些应用可能需要直接访问设备硬件或执行底层操作，这时候使用C或C++可能更为合适。例如，游戏引擎通常会使用C++来实现性能关键的游戏逻辑。
+> 5. **系统级开发：** 在一些特殊的应用场景，比如系统级应用或者需要操作底层系统资源的应用，可能需要使用C或C++。
+> 6. **图像处理、信号处理：** 对于需要高效处理图像、音频或其他信号的应用，C/C++的性能通常比Java更好，因此可能选择使用底层语言来实现这些部分。
+>
+> 请注意，尽管使用C或C++可以提供更高的性能和更多的底层控制权，但也增加了开发的复杂性。在选择使用底层语言之前，建议评估应用的性能需求，并确保确实需要使用底层语言来解决问题。
+
+
+
+## **APPLICATION FRAMEWORK**
+
+Application framework layer, all written in Java language for developers to call.
+
+## **APPLICATIONS**
+
+ Application layer, all the applications we install belong to this layer, such as WeChat, Plants vs. Zombies.
 
 # Framework 层级
 
