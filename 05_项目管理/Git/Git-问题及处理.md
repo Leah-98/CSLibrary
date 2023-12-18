@@ -35,3 +35,19 @@ git config --global https.postBuffer 1048576000
 git rm -r --cached .
 ```
 
+
+
+比较同一分支两个提交之间的差别
+
+https://github.com/sony-netapp/HomeAccount4China/compare/a90579c3f95667aff72cd0f630db42dd72d5ade3...bb95b720cbf7ef2acb7d14c8f816e7bd194c2c54
+
+
+
+删除本地不存在于远程的分支
+
+```
+git fetch --prune
+
+git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git branch -d
+```
+
