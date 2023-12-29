@@ -51,3 +51,13 @@ git fetch --prune
 git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git branch -d
 ```
 
+
+
+修改Commit-msg
+
+```
+git commit --amend //长消息
+git commit --amend -m "" //短消息
+git push --force
+```
+
