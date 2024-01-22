@@ -1,0 +1,10 @@
+Zygote主要用于孵化子进程。
+
+在Android系统中有以下两种程序：
+
+- Java应用程序，主要基于ART虚拟机，所有的应用程序APK都属于这类Native程序，也就是利用C或C++语言开发的程序，如bootanimation。所有的Java应用程序进程及系统服务SystemServer进程都由Zygote进程通过Linux的fork()函数孵化出来的。
+- 而native程序则由Init程序创建启动。
+
+Zgyote是Android中的第一个ART虚拟机，他通过socket的方式与其他进程进行通信。这里的其他进程主要指系统进程——SystemServer。
+
+Zygote是一个C/S模型，Zygote进程作为服务端，它主要负责创建java虚拟机，加载系统资源，启动SystemServer进程，以及在后续运行过程中启动普通的应用程序，其他进程作为客户端向它发出孵化请求，而Zygote接收到这个请求后就“孵化”出一个新的进程。比如，当点击Launcher里的应用程序图标去启动一个新的应所以程序进程时，这个请求会到达框架层的核心服务**ActivityManagerService**中，当AMS收到这个请求后，它通过掉牙Process类发出一个“孵化”紫禁城的Socket请求，而Zygote监听到这个请求后就立刻fork一个新的进程出来。
