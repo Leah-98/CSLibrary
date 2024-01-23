@@ -200,22 +200,6 @@ I have been listening to the user’s voice, and all the work of processing user
 
 The client buddy contains at least <u>three thread</u> brothers. After the Activity starts, it creates a **ViewRoot.W** object, and ActivityThread creates an **ApplicationThread** object. These two objects inherit the message manager Binder. Each Binder corresponds to a thread and is responsible for receiving the Linux Binder IPC call sent by the driver. The other is the **UI thread.**
 
-# Zygote
-
-系统中运行的第一个Dalvik虚拟机程序叫作zygote，该名称的意义是“一个卵”，，因为接下来的所有 Dalvik虚拟机进程都是通过这个“卵” 孵化出来的。
-
-zygote进程中包含两个主要模块，分别如下：
-
-- Socket服务端。该Socket服务端用于接收启动新的Dalvik进程的命令。
-- Framework共享类及共享资源。当zygote进程启动后，会装载一些共享的类及资源，其中共享类是在preload-classes文件中被定义，共享资源是在preload-resources中被定义。因为zygote进程用于孵化出其他Dalvik进程，因此，这些类和资源装载后，新的Dalvik进程就不需要再装载这些类和资源了，这就是所谓的共享。
-
-zygote进程对应的具体程序是app_process，该程序存在于system/bin目录下，启动该程序的指令是在init.rc中进行配置的。
-
-zygote有两个优秀的特点。
-
-- 每fork出的一个进程都是一个Dalvik虚拟机，独立的进程可以防止一个程序的崩溃导致所有程序都崩溃，这种虚拟机类似Java虚拟机，对于程序员来说，可以直接使用Java开发应用。
-- zygote进程预先会装载共享类和共享资源，这些类及资源实际上就是SDK中定义的大部分类和资源。因此，当通过zygote孵化出新的进程后，新的APK进程只需要去装载APK自身包含的类和资源即可，这就有效地解决了多个APK共享Framework资源的问题。
-
 # SystemServer
 
 zygote孵化出的第一个Dalvik进程叫做SystemServer，SystemServer仅仅是该进程的别名，而该进程具体对应的程序依然是app_process，因为SystemServer是从app_process中孵化出来的。
