@@ -19,3 +19,204 @@ Zygote是一个C/S模型，Zygote进程作为服务端，它主要负责创建ja
 
 
 ![img](D:\personal\CSLibrary\04_Android\imgs\12.png)
+
+## **init.rc**
+
+init进程启动后，对init.rc文件进行了解析并执行了各个阶段的动作，而zygote进程就是这个过程中被触发启动的。直接看代码直观点：
+
+```text
+/system/core/rootdir/init.rc
+
+on late-init
+    ...
+    # Now we can start zygote for devices with file based encryption
+    trigger zygote-start
+
+
+...
+on zygote-start && property:ro.crypto.state=encrypted && property:ro.crypto.type=file
+ # A/B update verifier that marks a successful boot.
+ exec_start update_verifier_nonencrypted
+ start netd
+ start zygote
+ start zygote_secondary
+
+ ...
+```
+
+zygote在init.rc中被触发并通过【start zygote】的方式启动，而这里的zygote是init.rc文件中的服务，如下：
+
+```text
+service zygote /system/bin/app_process -Xzygote /system/bin --zygote --start-system-server
+ class main
+ priority -20
+ user root
+ group root readproc reserved_disk
+ socket zygote stream 660 root system
+ onrestart write /sys/android_power/request_state wake
+ onrestart write /sys/power/state on
+ onrestart restart audioserver
+ onrestart restart cameraserver
+ onrestart restart media
+ onrestart restart netd
+ onrestart restart wificond
+ writepid /dev/cpuset/foreground/tasks
+```
+
+可见zygote服务最终调用了app_process这个可执行文件，并传入【--zygote】和【--start-system-server】这两个参数。
+
+## **app_main**
+
+app_main是一个可执行文件，入口是main函数，具体源码如下：
+
+```text
+/frameworks/base/cmds/app_process/app_main.cpp
+
+ int main(int argc, char* const argv[])
+ {
+     ...
+
+     AppRuntime runtime(argv[0], computeArgBlockSize(argc, argv));
+
+     ...
+    while (i < argc) {
+      const char* arg = argv[i++];
+      if (strcmp(arg, "--zygote") == 0) { //传参
+          zygote = true;
+          niceName = ZYGOTE_NICE_NAME;
+      } else if (strcmp(arg, "--start-system-server") == 0) { //传参
+          startSystemServer = true;
+      } else if (strcmp(arg, "--application") == 0) {
+          application = true;
+      } else if (strncmp(arg, "--nice-name=", 12) == 0) {
+          niceName.setTo(arg + 12);
+      } else if (strncmp(arg, "--", 2) != 0) {
+          className.setTo(arg);
+          break;
+      } else {
+          --i;
+          break;
+      }
+    }
+     ... 
+
+    if (zygote) {
+      runtime.start("com.android.internal.os.ZygoteInit", args, zygote);
+    } 
+
+    ...
+ }
+```
+
+专注zygote相关的关键代码，在这个main函数中，主要做了三件事：
+
+```text
+1.使用AppRuntime类实例化了一个虚拟机runtime，而AppRuntime则继承AndroidRuntime;
+2.解析传给app_main的参数，主要是zygote和start_system_server；
+3.启动虚拟机。启动的方法start是父类AndroidRuntime的方法。注意第一个传参的参数。
+```
+
+zygote启动方法在AndroidRuntime中，进入观摩下。
+
+## **AndroidRuntime**
+
+```text
+frameworks/base/core/jni/AndroidRuntime.cpp
+void AndroidRuntime::start(const char* className, const Vector<String8>& options, bool zygote)
+{
+    ...
+
+    JniInvocation jni_invocation;
+    jni_invocation.Init(NULL); //加载libart.so
+    JNIEnv* env;
+    if (startVm(&mJavaVM, &env, zygote) != 0) {
+      return;
+    }
+    onVmCreated(env);
+
+    /*
+    * Register android functions.
+    */
+    if (startReg(env) < 0) {
+      ALOGE("Unable to register all android natives\n");
+      return;
+    }
+
+    ...
+
+    char* slashClassName = toSlashClassName(className != NULL ? className : "");
+    jclass startClass = env->FindClass(slashClassName);
+    if (startClass == NULL) {
+        ALOGE("JavaVM unable to locate class '%s'\n", slashClassName);
+        /* keep going */
+    } else {
+        jmethodID startMeth = env->GetStaticMethodID(startClass, "main",
+          "([Ljava/lang/String;)V");
+        if (startMeth == NULL) {
+          ALOGE("JavaVM unable to find main() in '%s'\n", className);
+          /* keep going */
+        } else {
+          env->CallStaticVoidMethod(startClass, startMeth, strArray);
+        }
+    }
+
+    ...
+
+}
+```
+
+start方法中，主要做了四件事：
+
+```text
+1.加载libart.so，否则不能启动虚拟机；
+2.启动虚拟机；
+3.加载注册JNI方法；
+4.根据传递给start方法的第一个参数，去寻找ZygoteInit类，找到类之后，找到该类的main方法，然后调用，在这之后就进入了Java的世界。
+```
+
+start方法的第一个参数为"com.android.internal.os.ZygoteInit"，然后通过FindClass方法找到ZygoteInit类，然后再调用相应的main方法进入到Java世界。
+
+## **ZygoteInit**
+
+到了这里，就已经进入到了Java的世界，虚拟机已经运行起来，接下来要做的事就是启动system_server，然后做好自己的本分，等待孵化app的指令。具体详见main方法：
+
+```text
+frameworks/base/core/java/com/android/internal/os/ZygoteInit.java
+public static void main(String argv[]) {
+
+    ...
+
+    if (startSystemServer) {
+        Runnable r = forkSystemServer(abiList, socketName, zygoteServer);
+
+        // {@code r == null} in the parent (zygote) process, and {@code r != null} in the
+        // child (system_server) process.
+        if (r != null) {
+          r.run();
+          return;
+        }
+    }
+
+    Log.i(TAG, "Accepting command socket connections");
+
+    // The select loop returns early in the child process after a fork and
+    // loops forever in the zygote.
+    caller = zygoteServer.runSelectLoop(abiList);
+
+    if (caller != null) {
+        caller.run();
+    }
+    ...
+
+}
+```
+
+主要做了三件事：
+
+```text
+1.解析参数；
+2.fork system_server;
+3.调用runSelectLoop方法，等待进程孵化请求；
+```
+
+每个main方法一定会做的事情，那就是解析传入给它的参数，这里主要解析了start_system_server的创建需求，这个参数事从init.rc中传下来的。如果init.rc中有创建的system_server的需求，那么就会在这里被解析，然后进行创建。zygote在完成了system_server的创建后，调用runSelectLoop方法进行等待，响应app进程的创建请求，创建成功后，再调用run方法执行。
