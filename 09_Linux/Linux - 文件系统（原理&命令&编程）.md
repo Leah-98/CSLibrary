@@ -510,11 +510,15 @@ cd ~
 cd ..
 ```
 
+### mv 重命名文件和文件夹
+mv a b
+mv /a /b/c
+
 ### pwd 查看当前路径
 
 -P 显示确实的路径，而非使用连结路径
 
-### mkdir 创建路径 
+### mkdir 创建路径
 
 -m 配置文件的权限，不需要管默认权限
 
@@ -524,7 +528,7 @@ cd ..
 
 ![image-20230327141601131](E:\personal\CSLibrary\09_Linux\imgs\image-20230327141601131.png)
 
-### rmdir 删除目录 
+### rmdir 删除目录
 
 只能删除空的目录，rm可以删除非空目录
 
@@ -534,7 +538,7 @@ cd ..
 
 ## 文件操作
 
-### ls 查看文件 
+### ls 查看文件
 
 -a 查看包括隐藏文件在内的所有文件![image-20230323145108477](E:\personal\CSLibrary\09_Linux\imgs\image-20230323145108477.png)
 
@@ -596,7 +600,7 @@ nl [-bnw] 文件
 
 -w 行号栏位的占用位数
 
-### more 分页显示文件内容 
+### more 分页显示文件内容
 
 运行时可以输入的命令有：
 
@@ -632,7 +636,7 @@ N 反向的重复前一个搜寻
 
 q/Q 退出
 
-### head 查看文件的前n行 
+### head 查看文件的前n行
 
 语法：
 
@@ -646,7 +650,7 @@ head [-n number] 文件
 
 ![image-20230323174303049](E:\personal\CSLibrary\09_Linux\imgs\image-20230323174303049.png)
 
-### tail 查看文件的后n行 
+### tail 查看文件的后n行
 
 语法：
 
@@ -662,7 +666,7 @@ head [-n number] 文件
 
 ![image-20230323174446751](E:\personal\CSLibrary\09_Linux\imgs\image-20230323174446751.png)
 
-### touch 创建新文件 
+### touch 创建新文件
 
 ## 文件路径操作
 
@@ -695,7 +699,7 @@ cp [options] source1 source2 source3 ... directory
 
 -u 若destination比source旧才升级destintaion
 
-### mv 移动文件或目录 
+### mv 移动文件或目录
 
 语法：
 
@@ -712,7 +716,7 @@ cp [options] source1 source2 source3 ... directory
 
 -i 在删除文件或目录时对要删除的内容逐一进行确认
 
-### rm 删除目录中的文件或目录 
+### rm 删除目录中的文件或目录
 
 -f 忽略不存在的文件，不会出现警告信息
 
