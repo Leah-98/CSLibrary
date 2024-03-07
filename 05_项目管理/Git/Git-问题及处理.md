@@ -61,3 +61,28 @@ git commit --amend -m "" //短消息
 git push --force
 ```
 
+
+
+【怎样解决不小心将修改提交到主分支无法触发PR的问题】
+
+1.将本地的已修改过的开发分支重命名，比如TEMP
+
+git branch -m Release Release_MusicSettings
+
+2.重新从远程拉取开发分支
+
+git checkout Release
+
+3.将commit reset 到修改前的节点，并push --force到远程
+
+git reset --hard 107d523a2fa7540421a65476c28313de44c3da4c
+
+4.从已经reset完成的开发分支拉取一个新的分支
+
+git checkout -b Release_MusicSettingsRelated
+
+5.将TEMP上的修改merge到这个新的分支
+
+git merge Release_MusicSettings
+
+6.将这个新的分支push到远程，就可以进行PR操作了
