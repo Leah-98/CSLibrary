@@ -419,6 +419,8 @@ git push origin --tags
 git push origin :refs/tags/v0.1
 ```
 
+
+
 # Merge
 
 列出冲突的文件
@@ -427,3 +429,45 @@ git push origin :refs/tags/v0.1
 git diff --name-only --diff-filter=U
 ```
 
+
+
+# Patch的使用
+
+打patch
+
+```shell
+//将暂存区的文件与上一次Commit生成patch包
+git diff --cached > changes.patch 
+```
+
+使用补丁
+
+```shell
+git apply changes.patch
+```
+
+
+
+# Rebase的使用
+
+1.可以修改Commit-msg和commit内的文件内容
+
+```shell
+git rebase -i HEAD~N
+```
+
+2.在弹出的界面中pick -- > edit修改commit消息
+
+3.输入下面的命令开始修改
+
+```shell
+git commit --amend
+```
+
+4.输入下面的命令保存
+
+```shell
+git rebase --continue
+```
+
+5.回到第三步继续修改
