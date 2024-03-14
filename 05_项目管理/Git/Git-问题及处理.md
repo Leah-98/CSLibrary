@@ -63,26 +63,58 @@ git push --force
 
 
 
-【怎样解决不小心将修改提交到主分支无法触发PR的问题】
+【怎样解决不小心将修改提交到本地的主分支无法触发PR的问题】
 
-1.将本地的已修改过的开发分支重命名，比如TEMP
+1.将本地的主分支重命名为PR分支名称
 
-git branch -m Release Release_MusicSettings
+```shell
+git branch -m Main PR
+```
 
-2.重新从远程拉取开发分支
+2.将本地的PR分支Push到远程的同时，重新设置upstream分支
 
-git checkout Release
+原本upsteam分支应该设置为了主分支，如果不重新设置会push到主分支上
 
-3.将commit reset 到修改前的节点，并push --force到远程
+```shell
+git push origin --set-upstream origin PR
+```
 
+3.重新从远程拉取开发分支
+
+```shell
+git checkout Main
+```
+
+4.创建PR
+
+
+
+【怎样解决不小心将修改提交到远程的主分支无法触发PR的问题】
+
+1.将本地的主分支重命名为PR分支名称
+
+```shell
+git branch -m Main PR
+```
+
+2.将本地的PR分支Push到远程的同时，重新设置upstream分支
+
+原本upsteam分支应该设置为了主分支，如果不重新设置会push到主分支上
+
+```shell
+git push origin --set-upstream origin PR
+```
+
+3.重新从远程拉取开发分支
+
+```shell
+git checkout Main
+```
+
+4.将commit reset 到修改前的节点，并push --force到远程
+
+```shell
 git reset --hard 107d523a2fa7540421a65476c28313de44c3da4c
+```
 
-4.从已经reset完成的开发分支拉取一个新的分支
-
-git checkout -b Release_MusicSettingsRelated
-
-5.将TEMP上的修改merge到这个新的分支
-
-git merge Release_MusicSettings
-
-6.将这个新的分支push到远程，就可以进行PR操作了
+5.创建PR

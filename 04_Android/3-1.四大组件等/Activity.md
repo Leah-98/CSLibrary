@@ -124,6 +124,17 @@ method2 代码设置![0.7581949137520234.png](../imgs/0.7581949137520234.png)
 
 总的来说，只对SingleTop(且位于栈顶)，SingleTask和SingleInstance(且已经在任务栈中存在实例)的情况下，再次启动它们时才会调用，即只对startActivity有效，对仅仅从后台切换到前台而不再次启动的情形，不会触发onNewIntent。
 
+## onActivityResult()
+
+- 待跳转的Activity启动模式错误： standard与singletop模式是会在跳转后的Activity finish后执行onActivityResult，而singletask和singleinstance模式是在startActivityforresult后立即执行onActivityResult；
+- startActivityforresult（）的第二个参数requestCode必须>=0,而且<0xffff api文档里是这么说的：
+
+```
+@param requestCode If >= 0, this code will be returned in* onActivityResult() when the activity exits.
+```
+
+
+
 ## 横竖屏切换
 
 应用程序的界面从横向变为纵向或从纵向变为横向时，将会回调以下生命周期方法：
