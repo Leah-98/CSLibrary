@@ -118,3 +118,44 @@ git reset --hard 107d523a2fa7540421a65476c28313de44c3da4c
 ```
 
 5.创建PR
+
+
+
+【删除本地不存在于远程的分支】
+
+```shell
+git fetch --prune
+
+git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git branch -d
+```
+
+
+
+【在Commit中删除新加入gitignore的文件】
+
+```
+git rm --cached <文件路径>
+然后正常commit即可
+```
+
+
+
+【替换Commit历史记录中的AuthorEmail，删除Remote】
+
+```
+//可能要多次执行
+git filter-branch --env-filter 'OLD_EMAIL="2671800947@qq.com"; CORRECT_NAME="5109U25854"; CORRECT_EMAIL="qingqiu.li@sony.com"; if [ "$GIT_COMMITTER_EMAIL" = "$OLD_EMAIL" ]; then export GIT_COMMITTER_NAME="$CORRECT_NAME"; export GIT_COMMITTER_EMAIL="$CORRECT_EMAIL"; fi; if [ "$GIT_AUTHOR_EMAIL" = "$OLD_EMAIL" ]; then export GIT_AUTHOR_NAME="$CORRECT_NAME"; export GIT_AUTHOR_EMAIL="$CORRECT_EMAIL"; fi;' --tag-name-filter cat -- --branches --tags
+
+```
+
+执行完后删除.git\refs\original 和 .git\refs\remote下的文件
+
+
+
+【如何排除gitignore的文件后打包整个仓库？】
+
+```shell
+git clone D:\\temp\\Automation D:\\temp\\Automation_LQQ_OnTracked
+```
+
+打包temp仓库
