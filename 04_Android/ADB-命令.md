@@ -223,3 +223,5 @@ https://blog.csdn.net/chouzhou9701/article/details/119395831
 adb shell dmesg
 ```
 
+
+

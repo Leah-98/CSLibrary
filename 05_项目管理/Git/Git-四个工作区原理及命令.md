@@ -118,3 +118,12 @@ git reset HEAD^
 git reset --soft  HEAD^ 
 ```
 
+
+
+### 存储本地修改
+
+```shell
+git stash // 存储本地修改到暂存区
+git stash pop // 将暂存区释放到本地工作目录
+```
+
