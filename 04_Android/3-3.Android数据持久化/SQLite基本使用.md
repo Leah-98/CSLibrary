@@ -1,5 +1,3 @@
-# 数据库
-
 ## SQLite
 
 SQLite数据库是个轻量级的数据库，本质上是个二进制文件。
@@ -46,16 +44,3 @@ Cursor c2 = db.query("test_db",null,null,null,null,"group by (age)","having sex=
 
 https://www.jianshu.com/p/65923fa3e3dc
 
-## GreenDao
-
-地址:https://github.com/greenrobot/greenDAO
-
-基本概念
-
-某实体类------>某表
-
-某DAO-------->数据访问对象（某表的操作)
-
-DaoMaster---->数据库连接对象
-
-DaoSession--->由连接生成的会话
