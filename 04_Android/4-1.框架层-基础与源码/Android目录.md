@@ -2,7 +2,7 @@ Android 2.1
 
 ```
 .
-|-- Makefile
+|-- Makefile                    
 |-- bionic                        （bionic C库）
 |-- bootable                （启动引导相关代码）
 |-- build                        （存放系统编译规则及generic等基础开发包配置）
